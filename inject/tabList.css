@@ -1,0 +1,106 @@
+#clickAndHold_tab_menu{
+    font: "Arial" !important;
+    color: black !important;
+    position: absolute; 
+    border: 1px solid rgba(128, 128, 128, 0.6);
+    border-radius: 5px;
+    background: white;
+    z-index: 2000;  
+    overflow: auto; 
+    height: 350px;
+}
+#clickAndHold_tab_menu::-webkit-scrollbar{
+    border-radius: 0 3px 3px 0;
+}
+#clickAndHold_tab_menu::-webkit-scrollbar-thumb{
+    background: rgb(192, 192, 192);
+    border-radius: 9px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+#clickAndHold_tab_menu::-webkit-scrollbar-thumb:hover{
+    background: rgb(153, 153, 153);
+    border-radius: 9px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+#clickAndHold_tab_menu::-webkit-scrollbar-track{
+    border-left: 1px solid #a9a9a975;
+}
+
+#clickAndHold_tab_list{
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+}
+
+#clickAndHold_tab_list .clickAndHold_tab_item{
+    min-width: 0;
+    margin: 0.4rem 0;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 0.5rem;
+    box-sizing: border-box;
+    padding: 0.2rem 0.3rem 0.2rem 0;
+    border-radius: 3px; 
+    cursor: pointer;
+}
+
+#clickAndHold_tab_list .clickAndHold_tab_item .tab_item_title{
+    width: 85%;
+}
+
+#clickAndHold_tab_list .clickAndHold_tab_item:hover{
+    background: rgba(178, 178, 178, 0.679);   
+    font-size: bold    
+}
+
+/* #clickAndHold_tab_list .clickAndHold_tab_item:hover::after{
+    content: 'x';
+    position: absolute;
+    right: 3%;
+} */
+
+.tab_item_close_btn{
+    /* position: relative;
+    right: -2%;
+    width: 1.4rem;
+    height: 1.4rem; */
+    fill:#7c7c7c;
+}
+.tab_item_close_btn:hover{
+    /* visibility: visible; */
+    fill:#2e2e2e !important;
+}
+
+
+.clickAndHold_tab_item span{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.clickAndHold_tab_item.isActive{
+    font-weight: bold;
+    border: 1px solid rgba(128, 128, 128, 0.6);
+    padding: 0.2rem 0;
+    box-sizing: border-box;
+}
+
+/* .clickAndHold_tab_item.isActive::before{
+    position: relative;
+    content: '・';
+    margin-left: -0.5rem;
+    left: 2px;
+} */
+
+.clickAndHold_tab_item .tab_list_icon{
+    width: 1rem;
+    height: 1rem;
+    margin: 0 0.3rem;
+}
+
+
+

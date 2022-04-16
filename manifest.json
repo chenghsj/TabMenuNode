@@ -1,0 +1,21 @@
+{
+	"manifest_version": 3,
+
+	"name": "Click&Hold Tab List",
+	"description": "the tab list will appear after click and hold right button",
+	"version": "1.0",
+	"icons": {
+		"128": "icon.png"
+	},
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"web_accessible_resources": [{ "resources": ["inject/createTabMenu.js", "inject/nodeType.js", "close.svg"], "matches": ["<all_urls>"] }],
+	"minimum_chrome_version": "92",
+	"action": {
+		"default_icon": "icon.png"
+	},
+	"permissions": ["tabs", "scripting", "storage"],
+	"host_permissions": ["<all_urls>"]
+}
