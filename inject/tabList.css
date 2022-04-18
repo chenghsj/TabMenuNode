@@ -52,7 +52,7 @@
 }
 
 #clickAndHold_tab_list .clickAndHold_tab_item:hover{
-    background: rgba(178, 178, 178, 0.679);   
+    background: rgb(210, 210, 210);   
     font-size: bold    
 }
 
@@ -63,6 +63,9 @@
 .tab_item_close_btn:hover{
     /* visibility: visible; */
     fill:#2e2e2e !important;
+    border-radius: 5px;
+    background: #ababab;
+    transform: scale(0.9);
 }
 
 

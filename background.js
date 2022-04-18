@@ -3,7 +3,10 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 		return;
 	}
 	if (changeInfo.status === "complete") {
-		chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["inject/inject.js"] }, () => chrome.runtime.lastError);
+		chrome.scripting.executeScript(
+			{ target: { tabId: tabId }, files: ["inject/inject.js"] },
+			() => chrome.runtime.lastError
+		);
 		chrome.scripting.insertCSS({
 			target: { tabId: tabId },
 			files: ["inject/tabList.css"],
