@@ -16,11 +16,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	console.log(sender);
 	if (message.getTabList) {
-		Promise.all([getCurrentWindow(), getOtherWindows()]).then((allTabs) => {
-			console.log(allTabs);
-			sendResponse(allTabs);
-		});
-		// getCurrentWindow().then((tabs) => sendResponse(tabs));
+		getCurrentWindow().then((tabs) => sendResponse(tabs));
 		return true;
 	}
 	if (message.toTab) {
@@ -37,15 +33,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 function getCurrentWindow() {
 	return new Promise((resolve, reject) => {
 		chrome.tabs.query({ currentWindow: true }, function (tabs) {
-			if (chrome.runtime.lastError) reject(chrome.runtime.lastError.message);
-			resolve(tabs);
-		});
-	});
-}
-
-function getOtherWindows() {
-	return new Promise((resolve, reject) => {
-		chrome.tabs.query({ currentWindow: false }, function (tabs) {
 			if (chrome.runtime.lastError) reject(chrome.runtime.lastError.message);
 			resolve(tabs);
 		});

@@ -22,7 +22,7 @@ TabMenu({ width: 350, height: 500 }).then((TabMenu) => {
 	tabMenu = TabMenu;
 });
 
-function getAllTabList() {
+function getTabList() {
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
 			if (chrome.runtime.lastError) {
@@ -62,9 +62,9 @@ function doubleClickFunc(cb) {
 var handleDblclick = async function (e) {
 	let { clientWidth, clientHeight } = GetWindowSize();
 	let tabList = [];
-	tabList = await getAllTabList();
+	tabList = await getTabList();
 	timeout_id = setTimeout(async function () {
-		tabMenu.addList(tabList[0], tabList[1]);
+		tabMenu.addList(tabList);
 		tabMenu.setPosition(e, { clientWidth, clientHeight });
 		tabMenu.visible(true);
 	}, 300);
