@@ -41,49 +41,38 @@ function GetWindowSize() {
 	};
 }
 
-// not working within <pre></pre>
-function doubleClickFunc(cb) {
-	var clicks = 0,
-		timeout;
-	return async function () {
-		clicks++;
-		if (clicks == 1) {
-			timeout = setTimeout(function () {
-				clicks = 0;
-			}, 400);
-		} else {
-			timeout && clearTimeout(timeout);
-			cb && cb.apply(this, arguments);
-			clicks = 0;
-		}
-	};
-}
-
-var handleDblclick = async function (e) {
-	let { clientWidth, clientHeight } = GetWindowSize();
-	let tabList = [];
-	tabList = await getTabList();
-	timeout_id = setTimeout(async function () {
-		tabMenu.addList(tabList);
-		tabMenu.setPosition(e, { clientWidth, clientHeight });
-		tabMenu.visible(true);
-	}, 300);
-};
-
-window.onauxclick = doubleClickFunc(handleDblclick);
-
 window.onmousedown = async function (e) {
-	let isTabMenu;
+	let { clientWidth, clientHeight } = GetWindowSize();
+	let tabList, isTabMenu, isFunctionalNode;
+	if (e.x > clientWidth || e.y > clientHeight) return;
 	try {
+		tabList = await getTabList();
 		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
+		isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
 	} catch (err) {
 		console.error(err);
 	}
+	// console.log(tabList);
 	if (!isTabMenu && tabMenu?.visibility) {
 		clearTimeout(timeout_id);
 		tabMenu.visible(false);
 		return;
 	}
+	if (e.button == 0 && !isFunctionalNode) {
+		timeout_id = setTimeout(async function () {
+			tabMenu.addList(tabList);
+			tabMenu.setPosition(e, { clientWidth, clientHeight });
+			tabMenu.visible(true);
+		}, 250);
+	}
+};
+window.onmouseup = function () {
+	if (timeout_id) clearTimeout(timeout_id);
+};
+window.onmousemove = function (e) {
+	if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
+	else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
+	if (timeout_id) clearTimeout(timeout_id);
 };
 
 /**
