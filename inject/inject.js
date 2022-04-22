@@ -22,11 +22,11 @@ TabMenu({ width: 350, height: 500 }).then((TabMenu) => {
 	tabMenu = TabMenu;
 });
 
-function getTabList() {
+function getAllTabList() {
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
 			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError.message);
+				console.error(chrome.runtime.lastError.message);
 			} else {
 				resolve(response);
 			}
@@ -61,14 +61,10 @@ function doubleClickFunc(cb) {
 
 var handleDblclick = async function (e) {
 	let { clientWidth, clientHeight } = GetWindowSize();
-	let tabList;
-	try {
-		tabList = await getTabList();
-	} catch (err) {
-		console.error(err);
-	}
+	let tabList = [];
+	tabList = await getAllTabList();
 	timeout_id = setTimeout(async function () {
-		tabMenu.addList(tabList);
+		tabMenu.addList(tabList[0], tabList[1]);
 		tabMenu.setPosition(e, { clientWidth, clientHeight });
 		tabMenu.visible(true);
 	}, 300);
@@ -95,4 +91,5 @@ window.onmousedown = async function (e) {
  * TODO: limit website
  * TODO: other pages tab
  * TODO: group tab
+ * TODO: draggable item
  */
