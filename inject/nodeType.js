@@ -1,6 +1,6 @@
 function isTabMenu({ node }) {
 	while (node.tagName !== "HTML") {
-		if (node?.id === "clickAndHold_tab_menu") {
+		if (node?.id === "tabMenuNode_tab_menu") {
 			return true;
 		}
 		node = node.parentNode;

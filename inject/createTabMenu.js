@@ -1,41 +1,43 @@
 class TabMenu {
-	constructor({ width, height }) {
+	constructor({ width, height, showOtherWindows }) {
 		this.width = width;
 		this.maxHeight = height;
 		this.visibility = false;
-		this.tabList = [];
+		this.showOtherWindows = showOtherWindows;
 		this.createNode();
 		this.insertNodeToBody();
 	}
 
 	createNode = () => {
 		this.tabMenu = document.createElement("div");
-		this.contextUl = document.createElement("ul");
-		this.tabMenu.id = "clickAndHold_tab_menu";
-		this.contextUl.className = "clickAndHold_tab_list";
+		this.tabMenu.id = "tabMenuNode_tab_menu";
 	};
 
 	addList = (current, others) => {
-		this.tabList = current;
-		this.contextUl.innerHTML = "";
-		this.#createListItem_temp(this.contextUl, current, true);
-		// console.log(current);
-		// console.log(this.#classifyTabList(others));
-		// this.addOtherWinList(others);
-	};
+		let classifiedList = this.#classifyTabList(others);
+		while (
+			this.tabMenu.hasChildNodes() &&
+			this.tabMenu.lastChild.className !== "tab_menu_top_bar"
+		) {
+			this.tabMenu.removeChild(this.tabMenu.lastChild);
+		}
+		this.#createListNode({ list: current, currentWindow: true });
 
-	addOtherWinList = (otherList) => {
-		let classifiedList = this.#classifyTabList(otherList);
-		for (let win in classifiedList) {
-			let ul = document.createElement("ul");
-			ul.className = "clickAndHold_tab_list";
-			this.#createListItem_temp(ul, classifiedList[win], false);
-			this.tabMenu.append(ul);
+		if (others?.length > 0 && this.showOtherWindows) {
+			for (let windowId in classifiedList) {
+				this.#createListNode({ list: classifiedList[windowId], windowId, currentWindow: false });
+			}
 		}
 	};
 
-	#createListItem_temp = (listNode, list, currentWindow) => {
-		list.innerHTML = "";
+	#createListNode = ({ list, windowId, currentWindow }) => {
+		let ul = document.createElement("ul");
+		ul.className = "tabMenuNode_tab_list";
+		this.#createListItem({ listNode: ul, list, windowId, currentWindow });
+		this.tabMenu.appendChild(ul);
+	};
+
+	#createListItem = ({ listNode, list, windowId, currentWindow }) => {
 		let self = this;
 		list.forEach((item, index) => {
 			let li = document.createElement("li"),
@@ -44,7 +46,7 @@ class TabMenu {
 			let itemIcon = item.favIconUrl
 				? `<img class=${imgClass} src=${item.favIconUrl}></img>`
 				: `${blankIconPath}`;
-			li.className = `clickAndHold_tab_item ${item.active && "isActive"}`;
+			li.className = `tabMenuNode_tab_item ${item.active && "isActive"}`;
 			li.title = item.title.replace(/</, "&lt;").replace(/>/, "&gt;");
 			li.innerHTML += `${itemIcon}<span class='tab_item_title'>${li.title}</span>${closeBtn(
 				closeBtnId
@@ -58,38 +60,13 @@ class TabMenu {
 			});
 			listNode.append(li);
 			li.onclick = function (e) {
-				chrome.runtime.sendMessage({ toTab: item.id }, (response) => {
-					console.log(response);
-				});
-				self.visibility = false;
-				self.visible(false);
-			};
-		});
-	};
-
-	#createListItem = (list, currentWindow) => {
-		let self = this;
-		list.forEach((item, index) => {
-			let li = document.createElement("li"),
-				imgClass = "tab_list_web_icon";
-			let closeBtnId = `tab_item_close_btn_${index}`;
-			let itemIcon = item.favIconUrl
-				? `<img class=${imgClass} src=${item.favIconUrl}></img>`
-				: `${blankIconPath}`;
-			li.id = `clickAndHold_tab_item_${index}`;
-			li.className = `clickAndHold_tab_item ${item.active && "isActive"}`;
-			li.title = item.title.replace(/</, "&lt;").replace(/>/, "&gt;");
-			li.innerHTML += `${itemIcon}<span class='tab_item_title'>${li.title}</span>${closeBtn(
-				closeBtnId
-			)}`;
-			this.contextUl.append(li);
-			document.querySelector(`#${closeBtnId}`).onclick = function (e) {
-				e.stopPropagation();
-				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});
-				document.querySelector(`#clickAndHold_tab_item_${index}`).remove();
-			};
-			li.onclick = function (e) {
-				chrome.runtime.sendMessage({ toTab: item.id }, (response) => {});
+				console.log("tab clicked");
+				chrome.runtime.sendMessage(
+					{ toTab: item.id, currentWindow, windowId: parseInt(windowId) },
+					(response) => {
+						console.log(response);
+					}
+				);
 				self.visibility = false;
 				self.visible(false);
 			};
@@ -111,12 +88,20 @@ class TabMenu {
 
 	setPosition = (e, ...args) => {
 		let { clientWidth, clientHeight } = args[0];
-		let maxHeight = this.tabList.length <= 10 ? this.maxHeight * 0.6 : this.maxHeight;
+		let childrenCount = 0;
+		for (let i = 1; i < this.tabMenu.childElementCount; i++) {
+			for (let j = 0; j < this.tabMenu.childNodes[i].childElementCount; j++) {
+				childrenCount++;
+			}
+		}
+		let maxHeight = childrenCount <= 10 ? this.maxHeight * 0.6 : this.maxHeight;
+		// let maxHeight = this.tabList.length <= 10 ? this.maxHeight * 0.6 : this.maxHeight;
 		// let maxHeight = clientHeight < 900 ? this.maxHeight * 0.6 : this.maxHeight;
+
 		let windowMoveY = clientHeight + window.scrollY;
 		let top =
 			e.pageY > (clientHeight / 3) * 2 + window.scrollY
-				? windowMoveY - maxHeight
+				? windowMoveY - maxHeight - 5
 				: e.pageY + maxHeight > windowMoveY
 				? windowMoveY - maxHeight - 5
 				: e.pageY;
@@ -131,43 +116,84 @@ class TabMenu {
 
 	insertNodeToBody = () => {
 		document.body.prepend(this.tabMenu);
-		this.addSearchBox();
-		this.tabMenu.appendChild(this.contextUl);
+		this.addTopBar();
 		this.visible(false);
 	};
 
-	addSearchBox = () => {
+	addTopBar = () => {
 		let self = this;
-		let searchBox = document.createElement("div");
-		searchBox.className = "tab_menu_search_box";
+		let topBar = document.createElement("div");
+		topBar.className = "tab_menu_top_bar";
+		// search box
 		this.input = document.createElement("input");
-		this.tabMenu.prepend(searchBox);
 		this.input.type = "text";
 		this.input.placeholder = "Search...";
-		searchBox.append(this.input);
+		// checkbox
+		let checkBoxContainer = document.createElement("div");
+		this.checkBox = document.createElement("input");
+		this.checkBox.type = "checkBox";
+		this.checkBox.checked = this.showOtherWindows;
+		this.checkBox.id = "other_windows_checkBox";
+		checkBoxContainer.innerHTML += `<label for=${this.checkBox.id}>Other Windows</label>`;
+		checkBoxContainer.prepend(this.checkBox);
+
+		this.tabMenu.prepend(topBar);
+		topBar.append(this.input, checkBoxContainer);
 		let timeId;
 		this.input.onkeyup = function (e) {
 			if (timeId) {
 				clearTimeout(timeId);
 			}
 			timeId = setTimeout(() => {
-				let input = e.target.value.toLowerCase();
-				let regexp = new RegExp(input, "i");
-				let tabLi = self.contextUl.children;
-				for (let i = 0; i < tabLi.length; i++) {
-					if (!regexp.test(tabLi[i].innerText.toLowerCase())) {
-						tabLi[i].style.display = "none";
-					} else {
-						tabLi[i].style.display = "flex";
-					}
-				}
+				self.#inputEventHandler(e);
 			}, 50);
 		};
+	};
+
+	onCheckBoxChanged = async (cb) => {
+		let self = this;
+		let tabList = await cb();
+		this.checkBox.addEventListener("change", function () {
+			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () {});
+			self.showOtherWindows = this.checked;
+			if (this.checked) {
+				self.addList(tabList[0], tabList[1]);
+			} else {
+				self.addList(tabList[0]);
+			}
+		});
+	};
+
+	#inputEventHandler = (e) => {
+		let input = e.target.value.toLowerCase();
+		let regexp = new RegExp(input, "i");
+		for (let i = 1; i < this.tabMenu.childElementCount; i++) {
+			let k = 0;
+			for (let j = 0; j < this.tabMenu.childNodes[i].childElementCount; j++) {
+				if (
+					input !== "" &&
+					!regexp.test(this.tabMenu.childNodes[i].childNodes[j].innerText.toLowerCase())
+				) {
+					this.tabMenu.childNodes[i].childNodes[j].style.display = "none";
+					k++;
+					if (k === this.tabMenu.childNodes[i].childElementCount) {
+						this.tabMenu.childNodes[i].style.display = "none";
+					}
+				} else {
+					this.tabMenu.childNodes[i].childNodes[j].style.display = "flex";
+					this.tabMenu.childNodes[i].style.display = "block";
+				}
+			}
+		}
 	};
 
 	visible = (bool) => {
 		this.tabMenu.style.visibility = bool ? "visible" : "hidden";
 		this.visibility = bool;
+		if (!bool) {
+			this.input.value = "";
+			this.tabMenu.scrollTop = 0;
+		}
 	};
 }
 

@@ -24,6 +24,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 		return true;
 	}
 	if (message.toTab) {
+		if (!message.currentWindow) {
+			chrome.windows.update(message.windowId, { focused: true });
+		}
 		chrome.tabs.update(message.toTab, { active: true });
 		return true;
 	}

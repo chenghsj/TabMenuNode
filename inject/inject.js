@@ -18,9 +18,40 @@ async function TabMenu(...args) {
 	return new TabMenu(args[0]);
 }
 
-TabMenu({ width: 350, height: 500 }).then((TabMenu) => {
-	tabMenu = TabMenu;
-});
+// function restore_options() {
+// 	// Use default value color = 'red' and likesColor = true.
+// 	chrome.storage.sync.get(
+// 		{
+// 			timeInterval: 400,
+// 		},
+// 		function (items) {
+// 			document.querySelector("input").value = items.timeInterval;
+// 		}
+// 	);
+// }
+// document.addEventListener("DOMContentLoaded", restore_options);
+
+function getAllStorageSyncData() {
+	return new Promise((resolve, reject) => {
+		chrome.storage.sync.get(null, (items) => {
+			if (chrome.runtime.lastError) {
+				return reject(chrome.runtime.lastError);
+			}
+			resolve(items);
+		});
+	});
+}
+getAllStorageSyncData()
+	.then((storageData) => {
+		return TabMenu({ width: 350, height: 500, showOtherWindows: storageData.showOtherWindows });
+	})
+	.then((TabMenu) => {
+		tabMenu = TabMenu;
+		tabMenu.onCheckBoxChanged(async function () {
+			let tabList = await getAllTabList();
+			return tabList;
+		});
+	});
 
 function getAllTabList() {
 	return new Promise((resolve, reject) => {
