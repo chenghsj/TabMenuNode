@@ -43,8 +43,6 @@ getAllStorageSyncData()
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	if (message.tabChanged) {
-		console.log(sender);
-		console.log("window Changed");
 		tabMenu.visible(false);
 		sendResponse();
 		return true;

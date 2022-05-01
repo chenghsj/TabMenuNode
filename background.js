@@ -40,7 +40,6 @@ chrome.tabs.onActivated.addListener(function ({ tabId, windowId }) {
 });
 //close tab menu when window lost focus
 chrome.windows.onFocusChanged.addListener(function (windowId) {
-	console.log(`windowId: ${windowId}`);
 	chrome.tabs.query({ active: true, currentWindow: false }, function (tabs) {
 		if (tabs.length > 0) {
 			for (let tab of tabs) {

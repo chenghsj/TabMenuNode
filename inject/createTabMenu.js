@@ -52,8 +52,6 @@ class TabMenu {
 				closeBtnId
 			)}`;
 			li.lastChild.addEventListener("click", function (e) {
-				console.log("clicked");
-				console.log(this);
 				e.stopPropagation();
 				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});
 				this.closest("li").remove();

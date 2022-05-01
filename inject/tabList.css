@@ -62,6 +62,10 @@
     cursor: pointer;
 }
 
+.tabMenuNode_tab_item:before{
+    content: "" !important;
+}
+
 .tabMenuNode_tab_item .tab_item_title{
     width: 85%;
 }
@@ -109,7 +113,8 @@
 .tab_menu_top_bar {
     display: flex;
     justify-content: space-between;
-    max-height: 15%;
+    align-items: center;
+    height: 50px;
     width: 100%;
     position: sticky;
     top: 0;
@@ -123,12 +128,13 @@
 }
 
 .tab_menu_top_bar > input {
-    height: 50%;
+    height: 100%;
     margin: 0 !important;
     max-width: 50%;
     border: 1px solid #a5a5a5 !important;
     border-radius: 5px !important;
     padding: 1% !important;
+    box-sizing: border-box;
     box-shadow: none !important;
     /* font-size: 0.9rem; */
 }
