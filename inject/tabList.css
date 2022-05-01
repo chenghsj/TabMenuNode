@@ -38,10 +38,15 @@
 .tabMenuNode_tab_list{
     list-style: none;
     padding: 0 2%;
-    margin: 2.5% !important;
-    /* margin-top: -1% !important; */
-    border: 1px solid rgb(202, 202, 202);
+    margin: 4% !important;
+    border: 1px solid #969696;
+    /* box-shadow: 0px 0px 5px -1px #a9a9a9; */
     border-radius: 5px;
+}
+
+.tabMenuNode_tab_list.current_window{
+    border: 1.5px solid rgb(0 28 243 / 52%);
+    box-shadow: 0px 0px 5px -1px rgb(0 28 243 / 35%);
 }
 
 .tabMenuNode_tab_item{
@@ -127,9 +132,11 @@
     box-shadow: none !important;
     /* font-size: 0.9rem; */
 }
-
 .tab_menu_top_bar > input:focus{
-    border: 1px solid #4d7fff !important;
+    border: 1.5px solid rgb(0 28 243 / 52%) !important;
+}
+.tab_menu_top_bar > input:focus-visible{
+    outline: none !important;
 }
 
 .tab_menu_top_bar > div {
@@ -144,8 +151,12 @@
 .tab_menu_top_bar > div > input {
     margin: 0 !important;
     margin-right: 2% !important;
+    cursor: pointer;
 }
 
 .tab_menu_top_bar > div > label {
     line-height: normal;
+    cursor: pointer;
+    margin: 0 !important;
+    font-weight: normal !important;
 }

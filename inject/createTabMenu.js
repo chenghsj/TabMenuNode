@@ -32,7 +32,7 @@ class TabMenu {
 
 	#createListNode = ({ list, windowId, currentWindow }) => {
 		let ul = document.createElement("ul");
-		ul.className = "tabMenuNode_tab_list";
+		ul.className = `tabMenuNode_tab_list ${currentWindow && "current_window"}`;
 		this.#createListItem({ listNode: ul, list, windowId, currentWindow });
 		this.tabMenu.appendChild(ul);
 	};
@@ -60,12 +60,9 @@ class TabMenu {
 			});
 			listNode.append(li);
 			li.onclick = function (e) {
-				console.log("tab clicked");
 				chrome.runtime.sendMessage(
 					{ toTab: item.id, currentWindow, windowId: parseInt(windowId) },
-					(response) => {
-						console.log(response);
-					}
+					(response) => {}
 				);
 				self.visibility = false;
 				self.visible(false);
@@ -87,28 +84,31 @@ class TabMenu {
 	};
 
 	setPosition = (e, ...args) => {
-		let { clientWidth, clientHeight } = args[0];
+		this.clientWidth = args[0]?.clientWidth || this.clientWidth;
+		this.clientHeight = args[0]?.clientHeight || this.clientHeight;
+		this.pageX = e?.pageX || this.pageX;
+		this.pageY = e?.pageY || this.pageY;
 		let childrenCount = 0;
 		for (let i = 1; i < this.tabMenu.childElementCount; i++) {
 			for (let j = 0; j < this.tabMenu.childNodes[i].childElementCount; j++) {
 				childrenCount++;
 			}
 		}
-		let maxHeight = childrenCount <= 10 ? this.maxHeight * 0.6 : this.maxHeight;
-		// let maxHeight = this.tabList.length <= 10 ? this.maxHeight * 0.6 : this.maxHeight;
-		// let maxHeight = clientHeight < 900 ? this.maxHeight * 0.6 : this.maxHeight;
+		let maxHeight = childrenCount <= 6 ? this.maxHeight * 0.6 : this.maxHeight;
+		// let maxHeight = this.clientHeight < 900 ? this.maxHeight * 0.6 : this.maxHeight;
 
-		let windowMoveY = clientHeight + window.scrollY;
+		let windowMoveY = this.clientHeight + window.scrollY;
 		let top =
-			e.pageY > (clientHeight / 3) * 2 + window.scrollY
+			this.pageY > (this.clientHeight / 3) * 2 + window.scrollY
 				? windowMoveY - maxHeight - 5
-				: e.pageY + maxHeight > windowMoveY
+				: this.pageY + maxHeight > windowMoveY
 				? windowMoveY - maxHeight - 5
-				: e.pageY;
+				: this.pageY;
 		this.tabMenu.style.cssText = `
 		top:${top}px;
-		left:${e.pageX + this.width < clientWidth + window.scrollX && e.pageX + 5}px;
-		right:${e.pageX + this.width > clientWidth + window.scrollX && clientWidth - e.pageX}px;  
+		left:${this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5}px;
+		right:
+		${this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX}px;  
 		width: ${this.width}px;
 		height: ${maxHeight}px;
 		`;
@@ -129,31 +129,32 @@ class TabMenu {
 		this.input.type = "text";
 		this.input.placeholder = "Search...";
 		// checkbox
-		let checkBoxContainer = document.createElement("div");
-		this.checkBox = document.createElement("input");
-		this.checkBox.type = "checkBox";
-		this.checkBox.checked = this.showOtherWindows;
-		this.checkBox.id = "other_windows_checkBox";
-		checkBoxContainer.innerHTML += `<label for=${this.checkBox.id}>Other Windows</label>`;
-		checkBoxContainer.prepend(this.checkBox);
+		let checkboxContainer = document.createElement("div");
+		this.checkbox = document.createElement("input");
+		this.checkbox.type = "checkbox";
+		this.checkbox.checked = this.showOtherWindows;
+		this.checkbox.id = "other_windows_checkbox";
+		checkboxContainer.innerHTML += `<label for=${this.checkbox.id}>Other Windows</label>`;
+		checkboxContainer.prepend(this.checkbox);
 
 		this.tabMenu.prepend(topBar);
-		topBar.append(this.input, checkBoxContainer);
+		topBar.append(this.input, checkboxContainer);
 		let timeId;
 		this.input.onkeyup = function (e) {
 			if (timeId) {
 				clearTimeout(timeId);
 			}
 			timeId = setTimeout(() => {
-				self.#inputEventHandler(e);
+				self.input.value = e.target.value;
+				self.#inputEventHandler(self.input.value);
 			}, 50);
 		};
 	};
 
-	onCheckBoxChanged = async (cb) => {
+	onCheckboxChanged = async (cb) => {
 		let self = this;
 		let tabList = await cb();
-		this.checkBox.addEventListener("change", function () {
+		this.checkbox.addEventListener("change", function () {
 			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () {});
 			self.showOtherWindows = this.checked;
 			if (this.checked) {
@@ -161,11 +162,16 @@ class TabMenu {
 			} else {
 				self.addList(tabList[0]);
 			}
+			if (self.input.value) {
+				self.#inputEventHandler(self.input.value);
+			}
+			self.tabMenu.scrollTop = 0;
+			self.setPosition();
 		});
 	};
 
-	#inputEventHandler = (e) => {
-		let input = e.target.value.toLowerCase();
+	#inputEventHandler = (value) => {
+		let input = value.toLowerCase();
 		let regexp = new RegExp(input, "i");
 		for (let i = 1; i < this.tabMenu.childElementCount; i++) {
 			let k = 0;
@@ -204,22 +210,3 @@ var blankIconPath = `<svg class='tab_list_blank_icon' width="24" height="24" vie
 function closeBtn(id) {
 	return `<svg id=${id} class='tab_item_close_btn' width="24" height="24" fill="" viewBox="0 0 24 24"><path fill="" d="M7.05022 7.05028C6.65969 7.4408 6.65969 8.07397 7.05022 8.46449L10.5858 12L7.05023 15.5356C6.6597 15.9261 6.6597 16.5593 7.05023 16.9498C7.44075 17.3403 8.07392 17.3403 8.46444 16.9498L12 13.4142L15.5355 16.9498C15.926 17.3403 16.5592 17.3403 16.9497 16.9498C17.3402 16.5592 17.3402 15.9261 16.9497 15.5356L13.4142 12L16.9497 8.46449C17.3402 8.07397 17.3402 7.4408 16.9497 7.05028C16.5592 6.65976 15.926 6.65976 15.5355 7.05028L12 10.5858L8.46443 7.05028C8.07391 6.65975 7.44074 6.65975 7.05022 7.05028Z"/></svg>`;
 }
-
-{
-	/* <div class="menu_search">    
-    <input placeholder="Search..." type="text">
-</div>  */
-}
-
-// .menu_search {
-//     padding: 0 1rem;
-//     height: 1rem;
-//     width: 100%;
-//     margin-top: 3%;
-//     box-sizing: border-box;
-// }
-
-// .menu_search > input {
-//     border: none;
-//     border-bottom: 1px solid  black;
-// }

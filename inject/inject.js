@@ -18,19 +18,6 @@ async function TabMenu(...args) {
 	return new TabMenu(args[0]);
 }
 
-// function restore_options() {
-// 	// Use default value color = 'red' and likesColor = true.
-// 	chrome.storage.sync.get(
-// 		{
-// 			timeInterval: 400,
-// 		},
-// 		function (items) {
-// 			document.querySelector("input").value = items.timeInterval;
-// 		}
-// 	);
-// }
-// document.addEventListener("DOMContentLoaded", restore_options);
-
 function getAllStorageSyncData() {
 	return new Promise((resolve, reject) => {
 		chrome.storage.sync.get(null, (items) => {
@@ -41,17 +28,28 @@ function getAllStorageSyncData() {
 		});
 	});
 }
+
 getAllStorageSyncData()
 	.then((storageData) => {
 		return TabMenu({ width: 350, height: 500, showOtherWindows: storageData.showOtherWindows });
 	})
 	.then((TabMenu) => {
 		tabMenu = TabMenu;
-		tabMenu.onCheckBoxChanged(async function () {
+		tabMenu.onCheckboxChanged(async function () {
 			let tabList = await getAllTabList();
 			return tabList;
 		});
 	});
+
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+	if (message.tabChanged) {
+		console.log(sender);
+		console.log("window Changed");
+		tabMenu.visible(false);
+		sendResponse();
+		return true;
+	}
+});
 
 function getAllTabList() {
 	return new Promise((resolve, reject) => {
@@ -105,11 +103,7 @@ window.onauxclick = doubleClickFunc(handleDblclick);
 
 window.onmousedown = async function (e) {
 	let isTabMenu;
-	try {
-		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-	} catch (err) {
-		console.error(err);
-	}
+	isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
 	if (!isTabMenu && tabMenu?.visibility) {
 		clearTimeout(timeout_id);
 		tabMenu.visible(false);

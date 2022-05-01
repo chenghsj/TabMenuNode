@@ -5,7 +5,7 @@
 	"description": "the tab list will appear after double click middle button",
 	"version": "1.0",
 	"icons": {
-		"128": "icon.png"
+		"128": "icon2.png"
 	},
 	"background": {
 		"service_worker": "background.js",
@@ -19,7 +19,7 @@
 	],
 	"minimum_chrome_version": "92",
 	"action": {
-		"default_icon": "icon.png"
+		"default_icon": "icon2.png"
 	},
 	"permissions": ["tabs", "scripting", "storage"],
 	"host_permissions": ["<all_urls>"]

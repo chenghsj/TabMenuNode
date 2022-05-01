@@ -3,28 +3,23 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 		return;
 	}
 	if (changeInfo.status === "complete") {
-		chrome.scripting.executeScript(
-			{ target: { tabId: tabId }, files: ["inject/inject.js"] },
-			() => chrome.runtime.lastError
-		);
-		chrome.scripting.insertCSS({
-			target: { tabId: tabId },
-			files: ["inject/tabList.css"],
-		});
+		chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["inject/inject.js"] });
+		chrome.scripting.insertCSS({ target: { tabId: tabId }, files: ["inject/tabList.css"] });
 	}
 });
+
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	console.log(sender);
 	if (message.getTabList) {
+		//get all tab list
 		Promise.all([getCurrentWindow(), getOtherWindows()]).then((allTabs) => {
-			console.log(allTabs);
 			sendResponse(allTabs);
 		});
-		// getCurrentWindow().then((tabs) => sendResponse(tabs));
 		return true;
 	}
 	if (message.toTab) {
 		if (!message.currentWindow) {
+			//changing to other window tab
 			chrome.windows.update(message.windowId, { focused: true });
 		}
 		chrome.tabs.update(message.toTab, { active: true });
@@ -35,8 +30,31 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 		return true;
 	}
 });
+//close tab menu when changing tab by tab bar
+chrome.tabs.onActivated.addListener(function ({ tabId, windowId }) {
+	if (chrome.runtime.lastError) {
+		console.error(chrome.runtime.lastError.message);
+	} else {
+		chrome.tabs.sendMessage(tabId, { tabChanged: true }, (response) => {});
+	}
+});
+//close tab menu when window lost focus
+chrome.windows.onFocusChanged.addListener(function (windowId) {
+	console.log(`windowId: ${windowId}`);
+	chrome.tabs.query({ active: true, currentWindow: false }, function (tabs) {
+		if (tabs.length > 0) {
+			for (let tab of tabs) {
+				chrome.tabs.sendMessage(tab.id, { tabChanged: true }, (response) => {});
+			}
+		}
+	});
+	chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+		if (windowId === chrome.windows.WINDOW_ID_NONE) {
+			chrome.tabs.sendMessage(tabs[0].id, { tabChanged: true }, (response) => {});
+		}
+	});
+});
 
-// chrome.runtime.sendMessage
 function getCurrentWindow() {
 	return new Promise((resolve, reject) => {
 		chrome.tabs.query({ currentWindow: true }, function (tabs) {
