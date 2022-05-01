@@ -63,3 +63,12 @@ function getCurrentWindow() {
 		});
 	});
 }
+
+function getOtherWindows() {
+	return new Promise((resolve, reject) => {
+		chrome.tabs.query({ currentWindow: false }, function (tabs) {
+			if (chrome.runtime.lastError) reject(chrome.runtime.lastError.message);
+			resolve(tabs);
+		});
+	});
+}

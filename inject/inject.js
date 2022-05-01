@@ -43,13 +43,23 @@ getAllStorageSyncData()
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	if (message.tabChanged) {
-		console.log(sender);
-		console.log("window Changed");
 		tabMenu.visible(false);
 		sendResponse();
 		return true;
 	}
 });
+
+function getAllTabList() {
+	return new Promise((resolve, reject) => {
+		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
+			if (chrome.runtime.lastError) {
+				console.error(chrome.runtime.lastError.message);
+			} else {
+				resolve(response);
+			}
+		});
+	});
+}
 
 function getTabList() {
 	return new Promise((resolve, reject) => {
@@ -73,11 +83,13 @@ function GetWindowSize() {
 window.onmousedown = async function (e) {
 	let { clientWidth, clientHeight } = GetWindowSize();
 	let tabList, isTabMenu, isFunctionalNode;
+	// window scrollbar
 	if (e.x > clientWidth || e.y > clientHeight) return;
 	try {
-		tabList = await getTabList();
+		tabList = await getAllTabList();
 		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-		isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
+		// for main button click
+		// isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
 	} catch (err) {
 		console.error(err);
 	}
@@ -87,17 +99,29 @@ window.onmousedown = async function (e) {
 		tabMenu.visible(false);
 		return;
 	}
-	if (e.button == 0 && !isFunctionalNode) {
+	//right click for window system
+	if (e.button === 2) {
+		e.preventDefault();
 		timeout_id = setTimeout(async function () {
-			tabMenu.addList(tabList);
+			tabMenu.addList(tabList[0], tabList[1]);
 			tabMenu.setPosition(e, { clientWidth, clientHeight });
 			tabMenu.visible(true);
 		}, 250);
 	}
 };
+
+// window.addEventListener("contextmenu", function (e) {
+// 	// window system's contextmenu is triggered by keyup;
+// 	if (timeout_id) {
+// 		e.preventDefault();
+// 		clearTimeout(timeout_id);
+// 	}
+// });
+
 window.onmouseup = function () {
 	if (timeout_id) clearTimeout(timeout_id);
 };
+
 window.onmousemove = function (e) {
 	if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
 	else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
@@ -105,9 +129,7 @@ window.onmousemove = function (e) {
 };
 
 /**
- * TODO: search box
  * TODO: limit website
- * TODO: other pages tab
  * TODO: group tab
  * TODO: draggable item
  */

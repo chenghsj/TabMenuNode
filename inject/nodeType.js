@@ -9,8 +9,8 @@ function isTabMenu({ node }) {
 }
 
 function isFunctionalNode({ node }) {
-	let tagList = ["img", "input", "textarea", "select", "pre", "svg", "table"];
-	let classList = ["video", "animation", "player", "sidebar"];
+	let tagList = ["img", "input", "textarea", "select", "pre", "svg", "table", "nav"];
+	let classList = ["video", "animation", "player", "sidebar", "scroll"];
 	let nodeCursor = window.getComputedStyle(node).cursor;
 	while (node.tagName !== "HTML") {
 		if (nodeCursor === "pointer") return true;
