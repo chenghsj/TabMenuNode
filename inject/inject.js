@@ -18,8 +18,37 @@ async function TabMenu(...args) {
 	return new TabMenu(args[0]);
 }
 
-TabMenu({ width: 350, height: 500 }).then((TabMenu) => {
-	tabMenu = TabMenu;
+function getAllStorageSyncData() {
+	return new Promise((resolve, reject) => {
+		chrome.storage.sync.get(null, (items) => {
+			if (chrome.runtime.lastError) {
+				return reject(chrome.runtime.lastError);
+			}
+			resolve(items);
+		});
+	});
+}
+
+getAllStorageSyncData()
+	.then((storageData) => {
+		return TabMenu({ width: 350, height: 500, showOtherWindows: storageData.showOtherWindows });
+	})
+	.then((TabMenu) => {
+		tabMenu = TabMenu;
+		tabMenu.onCheckboxChanged(async function () {
+			let tabList = await getAllTabList();
+			return tabList;
+		});
+	});
+
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+	if (message.tabChanged) {
+		console.log(sender);
+		console.log("window Changed");
+		tabMenu.visible(false);
+		sendResponse();
+		return true;
+	}
 });
 
 function getTabList() {
