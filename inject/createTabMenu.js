@@ -158,10 +158,10 @@ class TabMenu {
 
 	#selectFontSize = () => {
 		let selectContainer = document.createElement("div");
-		selectContainer.className = "select_container";
+		selectContainer.className = "tabMenuNode_select_container";
 		selectContainer.innerHTML += "<span>Font Size:&nbsp;</span>";
 		this.select = document.createElement("select");
-		this.select.className = "tabMenuNode_font_select";
+		this.select.className = "tabMenuNode_font_size_select";
 		let minFontSize = 12,
 			maxFontSize = 20;
 		for (let i = minFontSize; i <= maxFontSize; i += 2) {
@@ -183,7 +183,7 @@ class TabMenu {
 	//show other windows
 	#checkbox = () => {
 		let checkboxContainer = document.createElement("div");
-		checkboxContainer.className = "checkbox_container";
+		checkboxContainer.className = "tabMenuNode_checkbox_container";
 		this.checkbox = document.createElement("input");
 		this.checkbox.type = "checkbox";
 		this.checkbox.checked = this.showOtherWindows;
