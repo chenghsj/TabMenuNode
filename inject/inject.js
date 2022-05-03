@@ -108,7 +108,6 @@ window.onmousedown = async function (e) {
 	}
 	//right click for window system
 	if (e.button === 2) {
-		e.preventDefault();
 		timeout_id = setTimeout(async function () {
 			tabMenu.addList(tabList[0], tabList[1]);
 			tabMenu.setPosition(e, { clientWidth, clientHeight });
@@ -117,13 +116,12 @@ window.onmousedown = async function (e) {
 	}
 };
 
-// window.addEventListener("contextmenu", function (e) {
-// 	// window system's contextmenu is triggered by keyup;
-// 	if (timeout_id) {
-// 		e.preventDefault();
-// 		clearTimeout(timeout_id);
-// 	}
-// });
+window.addEventListener("contextmenu", function (e) {
+	// window system's contextmenu is triggered by keyup;
+	if (tabMenu?.visibility) {
+		e.preventDefault();
+	}
+});
 
 window.onmouseup = function () {
 	if (timeout_id) clearTimeout(timeout_id);

@@ -105,16 +105,19 @@ class TabMenu {
 				? windowMoveY - maxHeight - 5
 				: this.pageY;
 		let styles = {
-			top: `${top}px`,
-			left: `${this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5}px`,
-			right: `${
-				this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX
-			}px`,
-			width: `${this.width}px`,
-			height: `${maxHeight}px`,
+			top: top,
+			left: this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5,
+			right: this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX,
+			width: this.width,
+			height: maxHeight,
 		};
-		for (let key in styles) {
-			this.tabMenu.style[key] = styles[key];
+		console.log(`right: ${styles.right}`)
+		for (let key in styles) {	
+			if(styles[key]){
+				this.tabMenu.style[key] = `${styles[key]}px`;
+			} else {
+				this.tabMenu.style[key] = null;
+			}
 		}
 	};
 
