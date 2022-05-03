@@ -17,11 +17,9 @@
       <option value="right_btn">Click and hold right button</option>
     </select>
     <div id="interval_container">
-      <span id="interval_txt"></span><input type="number" id="interval_num" step="50" min="100"
-        max="1000"><span> ms (from 100 to 1000)</span>
+      <span id="interval_txt"></span><input type="number" id="interval_num" step="50" min="100" max="1000"><span> ms
+        (from 100 to 1000)</span>
     </div>
-
-    <small style="display: inline-block; font-weight: normal;">*Need to reload pages to make it work</small>
   </div>
 
 
@@ -30,8 +28,12 @@
     <div id="status"></div>
   </div>
 
-  <p id="exclude_txt">*Only Window system can use click and hold right button due to the contextmenu event handler
-    different from others</p>
+  <p id="exclude_txt">
+    <br>
+    *Need to reload pages to make it work<br><br>
+    *Only Window system can use click and hold right button due to the contextmenu event handler
+    different from the others.
+  </p>
 
   <div id="reload_container">
     <h3>
@@ -44,11 +46,14 @@
     <button id="reload_all">Reload</button>
   </div>
 
-  <div id="confirm_page">
-    <h3>Are you sure you want to reload all windows?</h3>
-    <div id="confirm_btn_container">
-      <button id="confirm">Yes</button>
-      <button id="cancel">No</button>
+
+  <div id="confirm_page_mask">
+    <div id="confirm_page">
+      <h3 id="confirm_message"></h3>
+      <div id="confirm_btn_container">
+        <button id="confirm_btn">Yes</button>
+        <button id="cancel_btn">No</button>
+      </div>
     </div>
   </div>
 

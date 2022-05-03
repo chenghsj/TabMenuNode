@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 
 	"name": "Tab Menu Node",
-	"description": "the tab list will appear after double click middle button",
+	"description": "the tab menu will appear after double click middle button",
 	"version": "1.0",
 	"icons": {
 		"128": "icon2.png"
@@ -11,13 +11,9 @@
 		"service_worker": "background.js",
 		"type": "module"
 	},
-	"options_ui":{
-		"page": "options/options.html",
-		"open_in_tab": false
-	},
 	"web_accessible_resources": [
 		{
-			"resources": ["inject/createTabMenu.js", "inject/nodeType.js"],
+			"resources": ["inject/createTabMenu.js", "inject/nodeType.js", "close.svg"],
 			"matches": ["<all_urls>"]
 		}
 	],

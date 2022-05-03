@@ -1,6 +1,7 @@
 var timeout_id,
 	showTabMenu = false,
 	tabMenu,
+	triggerType,
 	time_interval;
 
 async function module(...args) {
@@ -32,6 +33,7 @@ function getAllStorageSyncData() {
 getAllStorageSyncData()
 	.then((storageData) => {
 		console.log(storageData);
+		triggerType = storageData.triggerType;
 		time_interval = storageData.interval;
 		return TabMenu({
 			width: 350,
@@ -47,7 +49,11 @@ getAllStorageSyncData()
 			return tabList;
 		});
 		tabMenu.onSelectFontSizeChanged();
-		setMousedownEvent(time_interval);
+		if (triggerType === "middle_btn") {
+			DblMiddleClick(time_interval);
+		} else {
+			ClickAndHoldRightBtn(time_interval);
+		}
 	});
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
@@ -70,18 +76,6 @@ function getAllTabList() {
 	});
 }
 
-function getTabList() {
-	return new Promise((resolve, reject) => {
-		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
-			if (chrome.runtime.lastError) {
-				console.error(chrome.runtime.lastError.message);
-			} else {
-				resolve(response);
-			}
-		});
-	});
-}
-
 function GetWindowSize() {
 	return {
 		clientWidth: document.documentElement.clientWidth,
@@ -89,21 +83,12 @@ function GetWindowSize() {
 	};
 }
 
-function setMousedownEvent(time_interval) {
+function ClickAndHoldRightBtn(time_interval) {
 	window.onmousedown = async function (e) {
 		let { clientWidth, clientHeight } = GetWindowSize();
-		let tabList, isTabMenu, isFunctionalNode;
-		// window scrollbar
-		if (e.x > clientWidth || e.y > clientHeight) return;
-		try {
-			tabList = await getAllTabList();
-			isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-			// for main button click
-			// isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
-		} catch (err) {
-			console.error(err);
-		}
-		// console.log(tabList);
+		let tabList, isTabMenu;
+		tabList = await getAllTabList();
+		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
 		if (!isTabMenu && tabMenu?.visibility) {
 			clearTimeout(timeout_id);
 			tabMenu.visible(false);
@@ -118,25 +103,66 @@ function setMousedownEvent(time_interval) {
 			}, time_interval);
 		}
 	};
+	window.addEventListener("contextmenu", function (e) {
+		// window system's contextmenu is triggered by keyup;
+		if (tabMenu?.visibility) {
+			e.preventDefault();
+		}
+	});
+
+	window.onmouseup = function () {
+		if (timeout_id) clearTimeout(timeout_id);
+	};
+
+	window.onmousemove = function (e) {
+		if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
+		else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
+		if (timeout_id) clearTimeout(timeout_id);
+	};
 }
 
-
-window.addEventListener("contextmenu", function (e) {
-	// window system's contextmenu is triggered by keyup;
-	if (tabMenu?.visibility) {
-		e.preventDefault();
+function DblMiddleClick(time_interval) {
+	// not working within <pre></pre>
+	function doubleClickFunc(cb) {
+		var clicks = 0,
+			timeout;
+		return async function () {
+			clicks++;
+			if (clicks == 1) {
+				timeout = setTimeout(function () {
+					clicks = 0;
+				}, 400);
+			} else {
+				timeout && clearTimeout(timeout);
+				cb && cb.apply(this, arguments);
+				clicks = 0;
+			}
+		};
 	}
-});
 
-window.onmouseup = function () {
-	if (timeout_id) clearTimeout(timeout_id);
-};
+	var handleDblclick = async function (e) {
+		let { clientWidth, clientHeight } = GetWindowSize();
+		let tabList = [];
+		tabList = await getAllTabList();
+		timeout_id = setTimeout(async function () {
+			tabMenu.addList(tabList[0], tabList[1]);
+			tabMenu.setPosition(e, { clientWidth, clientHeight });
+			tabMenu.visible(true);
+		}, time_interval);
+	};
 
-window.onmousemove = function (e) {
-	if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
-	else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
-	if (timeout_id) clearTimeout(timeout_id);
-};
+	window.onauxclick = doubleClickFunc(handleDblclick);
+
+	window.onmousedown = async function (e) {
+		let isTabMenu;
+		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
+		if (!isTabMenu && tabMenu?.visibility) {
+			clearTimeout(timeout_id);
+			tabMenu.visible(false);
+			return;
+		}
+	};
+}
 
 window.onkeyup = function (e) {
 	if (e.key === "Escape") {
