@@ -31,7 +31,7 @@ function init() {
 		set_default();
 	});
 	triggerType.querySelectorAll("option").forEach((opt) => {
-		if (!isMac) {
+		if (opt.value == "right_btn" && !isMac) {
 			opt.selected = true;
 		}
 		if (opt.value == "right_btn" && isMac) {

@@ -1,11 +1,9 @@
+var isMac = window.navigator.userAgentData.platform.toLowerCase().indexOf("mac") >= 0;
 var timeout_id,
 	showTabMenu = false,
 	tabMenu,
-	triggerType =
-		window.navigator.userAgentData.platform.toLowerCase().indexOf("mac") >= 0
-			? "middle_btn"
-			: "right_btn",
-	time_interval;
+	triggerType = isMac ? "middle_btn" : "right_btn",
+	time_interval = isMac ? 400 : 250;
 
 async function module(...args) {
 	let { fnName } = args[0],
@@ -37,7 +35,7 @@ getAllStorageSyncData()
 	.then((storageData) => {
 		console.log(storageData);
 		triggerType = storageData.triggerType || triggerType;
-		time_interval = storageData.interval;
+		time_interval = storageData.interval || time_interval;
 		return TabMenu({
 			width: 350,
 			height: 500,
@@ -127,16 +125,15 @@ function ClickAndHoldRightBtn(time_interval) {
 function DblMiddleClick(time_interval) {
 	// not working within <pre></pre>
 	function doubleClickFunc(cb) {
-		var clicks = 0,
-			timeout;
+		var clicks = 0;
 		return async function () {
 			clicks++;
 			if (clicks == 1) {
-				timeout = setTimeout(function () {
+				timeout_id = setTimeout(function () {
 					clicks = 0;
-				}, 400);
+				}, time_interval);
 			} else {
-				timeout && clearTimeout(timeout);
+				timeout_id && clearTimeout(timeout_id);
 				cb && cb.apply(this, arguments);
 				clicks = 0;
 			}
@@ -147,11 +144,9 @@ function DblMiddleClick(time_interval) {
 		let { clientWidth, clientHeight } = GetWindowSize();
 		let tabList = [];
 		tabList = await getAllTabList();
-		timeout_id = setTimeout(async function () {
-			tabMenu.addList(tabList[0], tabList[1]);
-			tabMenu.setPosition(e, { clientWidth, clientHeight });
-			tabMenu.visible(true);
-		}, time_interval);
+		tabMenu.addList(tabList[0], tabList[1]);
+		tabMenu.setPosition(e, { clientWidth, clientHeight });
+		tabMenu.visible(true);
 	};
 
 	window.onauxclick = doubleClickFunc(handleDblclick);
