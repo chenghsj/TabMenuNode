@@ -1,7 +1,10 @@
 var timeout_id,
 	showTabMenu = false,
 	tabMenu,
-	triggerType,
+	triggerType =
+		window.navigator.userAgentData.platform.toLowerCase().indexOf("mac") >= 0
+			? "middle_btn"
+			: "right_btn",
 	time_interval;
 
 async function module(...args) {
@@ -33,7 +36,7 @@ function getAllStorageSyncData() {
 getAllStorageSyncData()
 	.then((storageData) => {
 		console.log(storageData);
-		triggerType = storageData.triggerType;
+		triggerType = storageData.triggerType || triggerType;
 		time_interval = storageData.interval;
 		return TabMenu({
 			width: 350,

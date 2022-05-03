@@ -11,9 +11,13 @@
 		"service_worker": "background.js",
 		"type": "module"
 	},
+	"options_ui": {
+		"page": "options/options.html",
+		"open_in_tab": false
+	},
 	"web_accessible_resources": [
 		{
-			"resources": ["inject/createTabMenu.js", "inject/nodeType.js", "close.svg"],
+			"resources": ["inject/createTabMenu.js", "inject/nodeType.js"],
 			"matches": ["<all_urls>"]
 		}
 	],
