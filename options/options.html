@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>My Test Extension Options</title>
+</head>
+<link rel="stylesheet" href="options.css">
+
+<body>
+
+  <div>
+    <h3>
+      <li>Way to open tab menu:</li>
+    </h3>
+    <select id="trigger_type">
+      <option value="middle_btn">Double middle click</option>
+      <option value="right_btn">Click and hold right button</option>
+    </select>
+    <div id="interval_container">
+      <span id="interval_txt"></span><input type="number" id="interval_num" step="50" min="100"
+        max="1000"><span> ms (from 100 to 1000)</span>
+    </div>
+
+    <small style="display: inline-block; font-weight: normal;">*Need to reload pages to make it work</small>
+  </div>
+
+
+  <div id="btn_container">
+    <button id="save">Save</button>
+    <div id="status"></div>
+  </div>
+
+  <p id="exclude_txt">*Only Window system can use click and hold right button due to the contextmenu event handler
+    different from others</p>
+
+  <div id="reload_container">
+    <h3>
+      <li>Reload pages on your own or click button below: </li>
+    </h3>
+    <select id="reload_type">
+      <option value="current">Current window</option>
+      <option value="all">All windows</option>
+    </select>
+    <button id="reload_all">Reload</button>
+  </div>
+
+
+
+  <script src="options.js"></script>
+</body>
+
+</html>

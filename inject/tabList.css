@@ -158,6 +158,10 @@
     font-size: 12px !important;
 }
 
+.tabMenuNode_font_size_select{
+    all: revert;
+}
+
 .tabMenuNode_font_size_select, #other_windows_checkbox{
     font-size: 12px !important;
     cursor: pointer;
