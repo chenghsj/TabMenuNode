@@ -1,7 +1,7 @@
 var timeout_id,
 	showTabMenu = false,
 	tabMenu,
-	node;
+	time_interval;
 
 async function module(...args) {
 	let { fnName } = args[0],
@@ -31,7 +31,8 @@ function getAllStorageSyncData() {
 
 getAllStorageSyncData()
 	.then((storageData) => {
-		// console.log(storageData);
+		console.log(storageData);
+		time_interval = storageData.interval;
 		return TabMenu({
 			width: 350,
 			height: 500,
@@ -46,6 +47,7 @@ getAllStorageSyncData()
 			return tabList;
 		});
 		tabMenu.onSelectFontSizeChanged();
+		setMousedownEvent(time_interval);
 	});
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
@@ -87,34 +89,37 @@ function GetWindowSize() {
 	};
 }
 
-window.onmousedown = async function (e) {
-	let { clientWidth, clientHeight } = GetWindowSize();
-	let tabList, isTabMenu, isFunctionalNode;
-	// window scrollbar
-	if (e.x > clientWidth || e.y > clientHeight) return;
-	try {
-		tabList = await getAllTabList();
-		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-		// for main button click
-		// isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
-	} catch (err) {
-		console.error(err);
-	}
-	// console.log(tabList);
-	if (!isTabMenu && tabMenu?.visibility) {
-		clearTimeout(timeout_id);
-		tabMenu.visible(false);
-		return;
-	}
-	//right click for window system
-	if (e.button === 2) {
-		timeout_id = setTimeout(async function () {
-			tabMenu.addList(tabList[0], tabList[1]);
-			tabMenu.setPosition(e, { clientWidth, clientHeight });
-			tabMenu.visible(true);
-		}, 250);
-	}
-};
+function setMousedownEvent(time_interval) {
+	window.onmousedown = async function (e) {
+		let { clientWidth, clientHeight } = GetWindowSize();
+		let tabList, isTabMenu, isFunctionalNode;
+		// window scrollbar
+		if (e.x > clientWidth || e.y > clientHeight) return;
+		try {
+			tabList = await getAllTabList();
+			isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
+			// for main button click
+			// isFunctionalNode = await module({ fnName: "isFunctionalNode", node: e.target });
+		} catch (err) {
+			console.error(err);
+		}
+		// console.log(tabList);
+		if (!isTabMenu && tabMenu?.visibility) {
+			clearTimeout(timeout_id);
+			tabMenu.visible(false);
+			return;
+		}
+		//right click for window system
+		if (e.button === 2) {
+			timeout_id = setTimeout(async function () {
+				tabMenu.addList(tabList[0], tabList[1]);
+				tabMenu.setPosition(e, { clientWidth, clientHeight });
+				tabMenu.visible(true);
+			}, time_interval);
+		}
+	};
+}
+
 
 window.addEventListener("contextmenu", function (e) {
 	// window system's contextmenu is triggered by keyup;
