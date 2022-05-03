@@ -55,8 +55,12 @@ class TabMenu {
 			)}`;
 			li.lastChild.addEventListener("click", function (e) {
 				e.stopPropagation();
-				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});
-				this.closest("li").remove();
+				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});				
+				if(this.closest("ul").childElementCount === 1){
+					this.closest("ul").remove();
+				} else {
+					this.closest("li").remove();
+				}
 			});
 			listNode.append(li);
 			li.onclick = function (e) {
@@ -111,7 +115,6 @@ class TabMenu {
 			width: this.width,
 			height: maxHeight,
 		};
-		console.log(`right: ${styles.right}`)
 		for (let key in styles) {	
 			if(styles[key]){
 				this.tabMenu.style[key] = `${styles[key]}px`;
