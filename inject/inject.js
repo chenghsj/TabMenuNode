@@ -31,7 +31,13 @@ function getAllStorageSyncData() {
 
 getAllStorageSyncData()
 	.then((storageData) => {
-		return TabMenu({ width: 350, height: 500, showOtherWindows: storageData.showOtherWindows });
+		// console.log(storageData);
+		return TabMenu({
+			width: 350,
+			height: 500,
+			showOtherWindows: storageData.showOtherWindows,
+			fontSize: storageData.tabMenuNode_fontSize,
+		});
 	})
 	.then((TabMenu) => {
 		tabMenu = TabMenu;
@@ -39,6 +45,7 @@ getAllStorageSyncData()
 			let tabList = await getAllTabList();
 			return tabList;
 		});
+		tabMenu.onSelectFontSizeChanged();
 	});
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
@@ -126,6 +133,12 @@ window.onmousemove = function (e) {
 	if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
 	else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
 	if (timeout_id) clearTimeout(timeout_id);
+};
+
+window.onkeyup = function (e) {
+	if (e.key === "Escape") {
+		tabMenu.visible(false);
+	}
 };
 
 /**

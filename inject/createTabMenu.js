@@ -1,9 +1,10 @@
 class TabMenu {
-	constructor({ width, height, showOtherWindows }) {
+	constructor({ width, height, showOtherWindows, fontSize }) {
 		this.width = width;
 		this.maxHeight = height;
 		this.visibility = false;
 		this.showOtherWindows = showOtherWindows;
+		this.fontSize = parseInt(fontSize) || 14;
 		this.createNode();
 		this.insertNodeToBody();
 	}
@@ -11,6 +12,7 @@ class TabMenu {
 	createNode = () => {
 		this.tabMenu = document.createElement("div");
 		this.tabMenu.id = "tabMenuNode_tab_menu";
+		this.tabMenu.style.fontSize = `${this.fontSize}px`;
 	};
 
 	addList = (current, others) => {
@@ -52,8 +54,6 @@ class TabMenu {
 				closeBtnId
 			)}`;
 			li.lastChild.addEventListener("click", function (e) {
-				console.log("clicked");
-				console.log(this);
 				e.stopPropagation();
 				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});
 				this.closest("li").remove();
@@ -104,14 +104,18 @@ class TabMenu {
 				: this.pageY + maxHeight > windowMoveY
 				? windowMoveY - maxHeight - 5
 				: this.pageY;
-		this.tabMenu.style.cssText = `
-		top:${top}px;
-		left:${this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5}px;
-		right:
-		${this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX}px;  
-		width: ${this.width}px;
-		height: ${maxHeight}px;
-		`;
+		let styles = {
+			top: `${top}px`,
+			left: `${this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5}px`,
+			right: `${
+				this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX
+			}px`,
+			width: `${this.width}px`,
+			height: `${maxHeight}px`,
+		};
+		for (let key in styles) {
+			this.tabMenu.style[key] = styles[key];
+		}
 	};
 
 	insertNodeToBody = () => {
@@ -121,24 +125,24 @@ class TabMenu {
 	};
 
 	addTopBar = () => {
-		let self = this;
 		let topBar = document.createElement("div");
 		topBar.className = "tab_menu_top_bar";
+
+		let optionsContainer = document.createElement("div");
+		optionsContainer.className = "options_container";
+
+		optionsContainer.append(this.#selectFontSize(), this.#checkbox());
+		this.tabMenu.prepend(topBar);
+		topBar.append(this.#searchBox(), optionsContainer);
+	};
+
+	#searchBox = () => {
+		let self = this;
 		// search box
 		this.input = document.createElement("input");
 		this.input.type = "text";
 		this.input.placeholder = "Search...";
-		// checkbox
-		let checkboxContainer = document.createElement("div");
-		this.checkbox = document.createElement("input");
-		this.checkbox.type = "checkbox";
-		this.checkbox.checked = this.showOtherWindows;
-		this.checkbox.id = "other_windows_checkbox";
-		checkboxContainer.innerHTML += `<label for=${this.checkbox.id}>Other Windows</label>`;
-		checkboxContainer.prepend(this.checkbox);
 
-		this.tabMenu.prepend(topBar);
-		topBar.append(this.input, checkboxContainer);
 		let timeId;
 		this.input.onkeyup = function (e) {
 			if (timeId) {
@@ -149,6 +153,44 @@ class TabMenu {
 				self.#inputEventHandler(self.input.value);
 			}, 50);
 		};
+		return this.input;
+	};
+
+	#selectFontSize = () => {
+		let selectContainer = document.createElement("div");
+		selectContainer.className = "tabMenuNode_select_container";
+		selectContainer.innerHTML += "<span>Font Size:&nbsp;</span>";
+		this.select = document.createElement("select");
+		this.select.className = "tabMenuNode_font_size_select";
+		let minFontSize = 12,
+			maxFontSize = 20;
+		for (let i = minFontSize; i <= maxFontSize; i += 2) {
+			this.select.options.add(new Option(`${i}px`, i, false, i === this.fontSize && true));
+		}
+		selectContainer.append(this.select);
+		return selectContainer;
+	};
+
+	onSelectFontSizeChanged = () => {
+		let self = this;
+		this.select.addEventListener("change", function (e) {
+			chrome.storage.sync.set({ tabMenuNode_fontSize: e.target.value }, function () {});
+			self.fontSize = e.target.value;
+			self.tabMenu.style.fontSize = `${e.target.value}px`;
+		});
+	};
+
+	//show other windows
+	#checkbox = () => {
+		let checkboxContainer = document.createElement("div");
+		checkboxContainer.className = "tabMenuNode_checkbox_container";
+		this.checkbox = document.createElement("input");
+		this.checkbox.type = "checkbox";
+		this.checkbox.checked = this.showOtherWindows;
+		this.checkbox.id = "other_windows_checkbox";
+		checkboxContainer.innerHTML += `<label id="other_windows_checkbox_label" for=${this.checkbox.id}>Other Windows</label>`;
+		checkboxContainer.prepend(this.checkbox);
+		return checkboxContainer;
 	};
 
 	onCheckboxChanged = async (cb) => {
@@ -199,6 +241,8 @@ class TabMenu {
 		if (!bool) {
 			this.input.value = "";
 			this.tabMenu.scrollTop = 0;
+		} else {
+			this.input.focus();
 		}
 	};
 }
