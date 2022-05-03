@@ -20,6 +20,8 @@ button {
     border: none;
     color: white;
     padding: 3px 10px;
+    width: 75px;
+    height: 25px;
 }
 
 button:hover{
@@ -51,4 +53,26 @@ button:active{
 
 #interval_container {
     margin: 5px 0;
+}
+
+#confirm_page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 300px;
+    height: 125px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    border: 1px solid black;
+    border-radius: 10px;
+    background: white;
+    padding: 0 20px;
+    padding-bottom: 20px;
+}
+
+#confirm_btn_container {
+    display: flex;
+    justify-content: space-around;
 }
