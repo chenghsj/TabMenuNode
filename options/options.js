@@ -6,6 +6,7 @@ var confirmPageMask = document.getElementById("confirm_page_mask");
 var confirmBtn = document.getElementById("confirm_btn");
 var cancelBtn = document.getElementById("cancel_btn");
 var confirmMessage = document.getElementById("confirm_message");
+var minInterval = 100, maxInterval = 1000;
 
 function save_options() {
 	chrome.storage.sync.set(
@@ -25,19 +26,20 @@ function save_options() {
 }
 
 function init() {
-	let isMac = window.navigator.userAgentData.platform.toLowerCase().indexOf("mac") >= 0;
+	let isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0;
 	set_default();
 	triggerType.addEventListener("change", function () {
 		set_default();
 	});
 	triggerType.querySelectorAll("option").forEach((opt) => {
-		if (opt.value == "right_btn" && !isMac) {
-			opt.selected = true;
-		}
 		if (opt.value == "right_btn" && isMac) {
 			opt.disabled = true;
 		}
 	});
+    intervalNum.addEventListener("onfocusout", function(e){
+        if(e.target.value > 1000) e.target.value = 1000;
+        if(e.target.value < 100) e.target.value = 100;
+    })
 
 	function set_default() {
 		intervalTxt.textContent = `${triggerType.value == "right_btn" ? "Hold" : "Click"} interval: `;
@@ -45,11 +47,10 @@ function init() {
 	}
 
 	confirmPageMask.addEventListener("click", function (e) {
-		console.log("clicked");
 		e.stopPropagation();
 	});
 
-	chrome.storage.sync.get({ triggerType: "middle_btn", interval: "400" }, function (items) {
+	chrome.storage.sync.get({ triggerType: isMac? "middle_btn" : "right_btn", interval: isMac ? 400 : 250 }, function (items) {
 		console.log(items);
 		intervalTxt.textContent = `${items.triggerType == "right_btn" ? "Hold" : "Click"} interval: `;
 		triggerType.value = items.triggerType;

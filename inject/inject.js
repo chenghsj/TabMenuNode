@@ -1,23 +1,25 @@
-var isMac = window.navigator.userAgentData.platform.toLowerCase().indexOf("mac") >= 0;
+var isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0;
 var timeout_id,
 	showTabMenu = false,
 	tabMenu,
 	triggerType = isMac ? "middle_btn" : "right_btn",
 	time_interval = isMac ? 400 : 250;
+	dlbClickInterval = 400;
+	clickAndHodInterval = 250;
 
-async function module(...args) {
-	let { fnName } = args[0],
+async function module(args) {
+	let { fnName } = args,
 		nodeTypeSrc = chrome.runtime.getURL("inject/nodeType.js"),
 		nodeType = await import(nodeTypeSrc),
 		module = { ...nodeType };
-	return module[fnName](args[0]);
+	return module[fnName](args);
 }
 
-async function TabMenu(...args) {
+async function TabMenu(args) {
 	let createTabMenuSrc = chrome.runtime.getURL("inject/createTabMenu.js"),
 		createTabMenu = await import(createTabMenuSrc),
 		TabMenu = createTabMenu.TabMenu;
-	return new TabMenu(args[0]);
+	return new TabMenu(args);
 }
 
 function getAllStorageSyncData() {
@@ -33,7 +35,6 @@ function getAllStorageSyncData() {
 
 getAllStorageSyncData()
 	.then((storageData) => {
-		console.log(storageData);
 		triggerType = storageData.triggerType || triggerType;
 		time_interval = storageData.interval || time_interval;
 		return TabMenu({
