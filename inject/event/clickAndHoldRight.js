@@ -1,6 +1,6 @@
-function ClickAndHoldRightBtn(args) {
-    let timeout_id;
-	let {module, GetWindowSize, getAllTabList, tabMenu, time_interval} = args;
+function ClickAndHoldRight(args) {
+	let timeout_id;
+	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval } = args;
 	window.onmousedown = async function (e) {
 		let { clientWidth, clientHeight } = GetWindowSize();
 		let tabList, isTabMenu;
@@ -38,4 +38,4 @@ function ClickAndHoldRightBtn(args) {
 	};
 }
 
-export { ClickAndHoldRightBtn }
+export { ClickAndHoldRight };

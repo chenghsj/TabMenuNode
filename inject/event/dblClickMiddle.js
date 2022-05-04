@@ -1,6 +1,6 @@
-function DblMiddleClick(args) {
-    let timeout_id;
-    let {module, GetWindowSize, getAllTabList, tabMenu, time_interval} = args;
+function DblClickMiddle(args) {
+	let timeout_id;
+	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval } = args;
 	// not working within <pre></pre>
 	function doubleClickFunc(cb) {
 		var clicks = 0;
@@ -40,4 +40,4 @@ function DblMiddleClick(args) {
 	};
 }
 
-export { DblMiddleClick }
+export { DblClickMiddle };

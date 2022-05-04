@@ -17,7 +17,12 @@
 	},
 	"web_accessible_resources": [
 		{
-			"resources": ["inject/createTabMenu.js", "inject/nodeType.js", "inject/event/clickAndHold.js", "inject/event/dblMiddleClick.js"],
+			"resources": [
+				"inject/createTabMenu.js",
+				"inject/nodeType.js",
+				"inject/event/clickAndHoldRight.js",
+				"inject/event/dblClickMiddle.js"
+			],
 			"matches": ["<all_urls>"]
 		}
 	],

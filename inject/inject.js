@@ -1,5 +1,5 @@
-var isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0;
-var tabMenu,
+var isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0,
+	tabMenu,
 	triggerType = isMac ? "middle_btn" : "right_btn",
 	time_interval = isMac ? 400 : 250;
 
@@ -11,13 +11,13 @@ async function module(args) {
 	return module[fnName](args);
 }
 
-async function triggerTypeModule(args){
+async function triggerTypeModule(args) {
 	let { type } = args,
-		clickAndHoldSrc = chrome.runtime.getURL("inject/event/clickAndHold.js"),
-		dblMiddleClickSrc = chrome.runtime.getURL("inject/event/dblMiddleClick.js"),
+		clickAndHoldSrc = chrome.runtime.getURL("inject/event/clickAndHoldRight.js"),
+		dblMiddleClickSrc = chrome.runtime.getURL("inject/event/dblClickMiddle.js"),
 		clickAndHold = await import(clickAndHoldSrc),
 		dblMiddleClick = await import(dblMiddleClickSrc),
-		trigger = {...clickAndHold, ...dblMiddleClick};
+		trigger = { ...clickAndHold, ...dblMiddleClick };
 	trigger[type](args);
 }
 
@@ -39,55 +39,6 @@ function getAllStorageSyncData() {
 	});
 }
 
-getAllStorageSyncData()
-	.then((storageData) => {
-		triggerType = storageData.triggerType || triggerType;
-		time_interval = storageData.interval || time_interval;
-		return TabMenu({
-			width: 350,
-			height: 500,
-			showOtherWindows: storageData.showOtherWindows,
-			fontSize: storageData.tabMenuNode_fontSize,
-		});
-	})
-	.then(async (TabMenu) => {
-		
-		tabMenu = TabMenu;
-		tabMenu.onCheckboxChanged(async function () {
-			let tabList = await getAllTabList();
-			return tabList;
-		});
-		tabMenu.onSelectFontSizeChanged();
-		
-		if (triggerType === "middle_btn") {
-			await triggerTypeModule({
-				type: "DblMiddleClick",
-				tabMenu,
-				time_interval,
-				module, 
-				GetWindowSize,
-				getAllTabList				
-			})
-		} else {
-			await triggerTypeModule({
-				type: "ClickAndHoldRightBtn",
-				tabMenu,
-				time_interval,
-				module, 
-				GetWindowSize,
-				getAllTabList			
-			})
-		}
-	});
-
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-	if (message.tabChanged) {
-		tabMenu.visible(false);
-		sendResponse();
-		return true;
-	}
-});
-
 function getAllTabList() {
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
@@ -106,6 +57,54 @@ function GetWindowSize() {
 		clientHeight: document.documentElement.clientHeight,
 	};
 }
+
+getAllStorageSyncData()
+	.then((storageData) => {
+		triggerType = storageData.triggerType || triggerType;
+		time_interval = storageData.interval || time_interval;
+		return TabMenu({
+			width: 350,
+			height: 500,
+			showOtherWindows: storageData.showOtherWindows,
+			fontSize: storageData.tabMenuNode_fontSize,
+		});
+	})
+	.then(async (TabMenu) => {
+		tabMenu = TabMenu;
+		tabMenu.onCheckboxChanged(async function () {
+			let tabList = await getAllTabList();
+			return tabList;
+		});
+		tabMenu.onSelectFontSizeChanged();
+		// way to trigger tab list
+		if (triggerType === "middle_btn") {
+			await triggerTypeModule({
+				type: "DblClickMiddle",
+				tabMenu,
+				time_interval,
+				module,
+				GetWindowSize,
+				getAllTabList,
+			});
+		} else {
+			await triggerTypeModule({
+				type: "ClickAndHoldRight",
+				tabMenu,
+				time_interval,
+				module,
+				GetWindowSize,
+				getAllTabList,
+			});
+		}
+	});
+
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+	if (message.tabChanged) {
+		tabMenu.visible(false);
+		sendResponse();
+		return true;
+	}
+});
 
 window.onkeyup = function (e) {
 	if (e.key === "Escape") {
