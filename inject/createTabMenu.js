@@ -55,8 +55,8 @@ class TabMenu {
 			)}`;
 			li.lastChild.addEventListener("click", function (e) {
 				e.stopPropagation();
-				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});				
-				if(this.closest("ul").childElementCount === 1){
+				chrome.runtime.sendMessage({ closeTab: true, tabId: item.id }, (response) => {});
+				if (this.closest("ul").childElementCount === 1) {
 					this.closest("ul").remove();
 				} else {
 					this.closest("li").remove();
@@ -111,12 +111,14 @@ class TabMenu {
 		let styles = {
 			top: top,
 			left: this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX + 5,
-			right: this.pageX + this.width > this.clientWidth + window.scrollX && this.clientWidth - this.pageX,
+			right:
+				this.pageX + this.width > this.clientWidth + window.scrollX &&
+				this.clientWidth - this.pageX,
 			width: this.width,
 			height: maxHeight,
 		};
-		for (let key in styles) {	
-			if(styles[key]){
+		for (let key in styles) {
+			if (styles[key]) {
 				this.tabMenu.style[key] = `${styles[key]}px`;
 			} else {
 				this.tabMenu.style[key] = null;
@@ -201,8 +203,8 @@ class TabMenu {
 
 	onCheckboxChanged = async (cb) => {
 		let self = this;
-		let tabList = await cb();
-		this.checkbox.addEventListener("change", function () {
+		this.checkbox.addEventListener("change", async function () {
+			let tabList = await cb();
 			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () {});
 			self.showOtherWindows = this.checked;
 			if (this.checked) {
