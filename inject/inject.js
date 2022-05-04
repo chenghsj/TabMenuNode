@@ -1,11 +1,7 @@
 var isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0;
-var timeout_id,
-	showTabMenu = false,
-	tabMenu,
+var tabMenu,
 	triggerType = isMac ? "middle_btn" : "right_btn",
 	time_interval = isMac ? 400 : 250;
-	dlbClickInterval = 400;
-	clickAndHodInterval = 250;
 
 async function module(args) {
 	let { fnName } = args,
@@ -13,6 +9,16 @@ async function module(args) {
 		nodeType = await import(nodeTypeSrc),
 		module = { ...nodeType };
 	return module[fnName](args);
+}
+
+async function triggerTypeModule(args){
+	let { type } = args,
+		clickAndHoldSrc = chrome.runtime.getURL("inject/event/clickAndHold.js"),
+		dblMiddleClickSrc = chrome.runtime.getURL("inject/event/dblMiddleClick.js"),
+		clickAndHold = await import(clickAndHoldSrc),
+		dblMiddleClick = await import(dblMiddleClickSrc),
+		trigger = {...clickAndHold, ...dblMiddleClick};
+	trigger[type](args);
 }
 
 async function TabMenu(args) {
@@ -44,17 +50,33 @@ getAllStorageSyncData()
 			fontSize: storageData.tabMenuNode_fontSize,
 		});
 	})
-	.then((TabMenu) => {
+	.then(async (TabMenu) => {
+		
 		tabMenu = TabMenu;
 		tabMenu.onCheckboxChanged(async function () {
 			let tabList = await getAllTabList();
 			return tabList;
 		});
 		tabMenu.onSelectFontSizeChanged();
+		
 		if (triggerType === "middle_btn") {
-			DblMiddleClick(time_interval);
+			await triggerTypeModule({
+				type: "DblMiddleClick",
+				tabMenu,
+				time_interval,
+				module, 
+				GetWindowSize,
+				getAllTabList				
+			})
 		} else {
-			ClickAndHoldRightBtn(time_interval);
+			await triggerTypeModule({
+				type: "ClickAndHoldRightBtn",
+				tabMenu,
+				time_interval,
+				module, 
+				GetWindowSize,
+				getAllTabList			
+			})
 		}
 	});
 
@@ -82,84 +104,6 @@ function GetWindowSize() {
 	return {
 		clientWidth: document.documentElement.clientWidth,
 		clientHeight: document.documentElement.clientHeight,
-	};
-}
-
-function ClickAndHoldRightBtn(time_interval) {
-	window.onmousedown = async function (e) {
-		let { clientWidth, clientHeight } = GetWindowSize();
-		let tabList, isTabMenu;
-		tabList = await getAllTabList();
-		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-		if (!isTabMenu && tabMenu?.visibility) {
-			clearTimeout(timeout_id);
-			tabMenu.visible(false);
-			return;
-		}
-		//right click for window system
-		if (e.button === 2) {
-			timeout_id = setTimeout(async function () {
-				tabMenu.addList(tabList[0], tabList[1]);
-				tabMenu.setPosition(e, { clientWidth, clientHeight });
-				tabMenu.visible(true);
-			}, time_interval);
-		}
-	};
-	window.addEventListener("contextmenu", function (e) {
-		// window system's contextmenu is triggered by keyup;
-		if (tabMenu?.visibility) {
-			e.preventDefault();
-		}
-	});
-
-	window.onmouseup = function () {
-		if (timeout_id) clearTimeout(timeout_id);
-	};
-
-	window.onmousemove = function (e) {
-		if (e.movementX <= 0.1 && e.movementX >= -0.1) return;
-		else if (e.movementY <= 0.1 && e.movementY >= -0.1) return;
-		if (timeout_id) clearTimeout(timeout_id);
-	};
-}
-
-function DblMiddleClick(time_interval) {
-	// not working within <pre></pre>
-	function doubleClickFunc(cb) {
-		var clicks = 0;
-		return async function () {
-			clicks++;
-			if (clicks == 1) {
-				timeout_id = setTimeout(function () {
-					clicks = 0;
-				}, time_interval);
-			} else {
-				timeout_id && clearTimeout(timeout_id);
-				cb && cb.apply(this, arguments);
-				clicks = 0;
-			}
-		};
-	}
-
-	var handleDblclick = async function (e) {
-		let { clientWidth, clientHeight } = GetWindowSize();
-		let tabList = [];
-		tabList = await getAllTabList();
-		tabMenu.addList(tabList[0], tabList[1]);
-		tabMenu.setPosition(e, { clientWidth, clientHeight });
-		tabMenu.visible(true);
-	};
-
-	window.onauxclick = doubleClickFunc(handleDblclick);
-
-	window.onmousedown = async function (e) {
-		let isTabMenu;
-		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
-		if (!isTabMenu && tabMenu?.visibility) {
-			clearTimeout(timeout_id);
-			tabMenu.visible(false);
-			return;
-		}
 	};
 }
 

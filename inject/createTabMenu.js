@@ -201,8 +201,8 @@ class TabMenu {
 
 	onCheckboxChanged = async (cb) => {
 		let self = this;
-		let tabList = await cb();
 		this.checkbox.addEventListener("change", function () {
+			let tabList = await cb();
 			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () {});
 			self.showOtherWindows = this.checked;
 			if (this.checked) {
