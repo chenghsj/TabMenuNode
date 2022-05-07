@@ -29,6 +29,7 @@ function ClickAndHoldRight(args) {
 		}
 	};
 	window.addEventListener("contextmenu", function (e) {
+		if (timeout_id) clearTimeout(timeout_id);
 		// window system's contextmenu is triggered by keyup;
 		if (tabMenu?.visibility) {
 			e.preventDefault();
