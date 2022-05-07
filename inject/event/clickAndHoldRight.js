@@ -1,8 +1,10 @@
 function ClickAndHoldRight(args) {
 	let timeout_id;
-	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval } = args;
+	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval, getAllStorageSyncData } =
+		args;
 	window.onmousedown = async function (e) {
 		let { clientWidth, clientHeight } = GetWindowSize();
+		let storageData = await getAllStorageSyncData();
 		let tabList, isTabMenu;
 		tabList = await getAllTabList();
 		isTabMenu = await module({ fnName: "isTabMenu", node: e.target });
@@ -13,10 +15,16 @@ function ClickAndHoldRight(args) {
 		}
 		//right click for window system
 		if (e.button === 2) {
-			timeout_id = setTimeout(async function () {
-				tabMenu.addList(tabList[0], tabList[1]);
-				tabMenu.setPosition(e, { clientWidth, clientHeight });
-				tabMenu.visible(true);
+			timeout_id = setTimeout(function () {
+				tabMenu.setStorageData(storageData).then(() => {
+					if (storageData.showOtherWindows) {
+						tabMenu.addList(tabList[0], tabList[1]);
+					} else {
+						tabMenu.addList(tabList[0]);
+					}
+					tabMenu.setPosition(e, { clientWidth, clientHeight });
+					tabMenu.visible(true);
+				});
 			}, time_interval);
 		}
 	};

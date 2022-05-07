@@ -1,0 +1,6 @@
+export default {
+	GET_TAB_LIST: "GET_TAB_LIST",
+	GO_TO_TAB: "GO_TO_TAB",
+	CLOSE_TAB: "CLOSE_TAB",
+	CLOSE_WINDOW: "CLOSE_WINDOW",
+};

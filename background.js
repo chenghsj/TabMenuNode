@@ -1,3 +1,5 @@
+import sendMessageList from "./inject/sendMessageList.js";
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 	if (!tab.url || !tab.url.startsWith("http")) {
 		return;
@@ -10,25 +12,32 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	console.log(sender);
-	if (message.getTabList) {
-		//get all tab list
-		Promise.all([getCurrentWindow(), getOtherWindows()]).then((allTabs) => {
-			sendResponse(allTabs);
-		});
-		return true;
+	switch (message.message) {
+		case sendMessageList.GET_TAB_LIST:
+			Promise.all([getCurrentWindow(), getOtherWindows()]).then((allTabs) => {
+				sendResponse(allTabs);
+			});
+			break;
+		case sendMessageList.GO_TO_TAB:
+			if (!message.currentWindow) {
+				//changing to other window tab
+				chrome.windows.update(message.windowId, { focused: true });
+			}
+			chrome.tabs.update(message.tabId, { active: true });
+			break;
+		case sendMessageList.CLOSE_TAB:
+			chrome.tabs.remove(message.tabId);
+			break;
+		case sendMessageList.CLOSE_WINDOW:
+			if (message.currentWindow) {
+				chrome.windows.update(message.nextWindowId, { focused: true }, function () {});
+			}
+			chrome.windows.remove(message.windowId);
+			break;
+		default:
+			break;
 	}
-	if (message.toTab) {
-		if (!message.currentWindow) {
-			//changing to other window tab
-			chrome.windows.update(message.windowId, { focused: true });
-		}
-		chrome.tabs.update(message.toTab, { active: true });
-		return true;
-	}
-	if (message.closeTab) {
-		chrome.tabs.remove(message.tabId);
-		return true;
-	}
+	return true;
 });
 //close tab menu when changing tab by tab bar
 chrome.tabs.onActivated.addListener(function ({ tabId, windowId }) {

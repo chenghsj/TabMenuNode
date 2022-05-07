@@ -1,7 +1,16 @@
+// import sendMessageList from "./sendMessageList";
+
 var isMac = window.navigator.platform.toLowerCase().indexOf("mac") >= 0,
+	sendMessageList,
 	tabMenu,
 	triggerType = isMac ? "middle_btn" : "right_btn",
 	time_interval = isMac ? 400 : 250;
+
+async function getSendMessageList() {
+	listSrc = chrome.runtime.getURL("inject/sendMessageList.js");
+	list = await import(listSrc);
+	return list.default;
+}
 
 async function module(args) {
 	let { fnName } = args,
@@ -41,7 +50,7 @@ function getAllStorageSyncData() {
 
 function getAllTabList() {
 	return new Promise((resolve, reject) => {
-		chrome.runtime.sendMessage({ getTabList: true }, (response) => {
+		chrome.runtime.sendMessage({ message: sendMessageList.GET_TAB_LIST }, (response) => {
 			if (chrome.runtime.lastError) {
 				console.error(chrome.runtime.lastError.message);
 			} else {
@@ -52,18 +61,33 @@ function getAllTabList() {
 }
 
 function GetWindowSize() {
+	let clientHeight =
+		document.documentElement.clientHeight > window.innerHeight
+			? window.innerHeight - 10
+			: document.documentElement.clientHeight;
 	return {
 		clientWidth: document.documentElement.clientWidth,
-		clientHeight: document.documentElement.clientHeight,
+		clientHeight,
 	};
 }
 
-getAllStorageSyncData()
+let helperFn = {
+	module,
+	GetWindowSize,
+	getAllTabList,
+	getAllStorageSyncData,
+};
+
+getSendMessageList()
+	.then((list) => {
+		sendMessageList = list;
+		return getAllStorageSyncData();
+	})
 	.then((storageData) => {
 		triggerType = storageData.triggerType || triggerType;
 		time_interval = storageData.interval || time_interval;
 		return TabMenu({
-			width: 350,
+			width: 380,
 			height: 500,
 			showOtherWindows: storageData.showOtherWindows,
 			fontSize: storageData.tabMenuNode_fontSize,
@@ -82,18 +106,14 @@ getAllStorageSyncData()
 				type: "DblClickMiddle",
 				tabMenu,
 				time_interval,
-				module,
-				GetWindowSize,
-				getAllTabList,
+				...helperFn,
 			});
 		} else {
 			await triggerTypeModule({
 				type: "ClickAndHoldRight",
 				tabMenu,
 				time_interval,
-				module,
-				GetWindowSize,
-				getAllTabList,
+				...helperFn,
 			});
 		}
 	});

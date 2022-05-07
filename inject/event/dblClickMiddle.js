@@ -1,6 +1,7 @@
 function DblClickMiddle(args) {
 	let timeout_id;
-	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval } = args;
+	let { module, GetWindowSize, getAllTabList, tabMenu, time_interval, getAllStorageSyncData } =
+		args;
 	// not working within <pre></pre>
 	function doubleClickFunc(cb) {
 		var clicks = 0;
@@ -19,12 +20,18 @@ function DblClickMiddle(args) {
 	}
 
 	var handleDblclick = async function (e) {
+		let storageData = await getAllStorageSyncData();
 		let { clientWidth, clientHeight } = GetWindowSize();
-		let tabList = [];
-		tabList = await getAllTabList();
-		tabMenu.addList(tabList[0], tabList[1]);
-		tabMenu.setPosition(e, { clientWidth, clientHeight });
-		tabMenu.visible(true);
+		let tabList = await getAllTabList();
+		tabMenu.setStorageData(storageData).then(() => {
+			if (storageData.showOtherWindows) {
+				tabMenu.addList(tabList[0], tabList[1]);
+			} else {
+				tabMenu.addList(tabList[0]);
+			}
+			tabMenu.setPosition(e, { clientWidth, clientHeight });
+			tabMenu.visible(true);
+		});
 	};
 
 	window.onauxclick = doubleClickFunc(handleDblclick);

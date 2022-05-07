@@ -21,7 +21,8 @@
 				"inject/createTabMenu.js",
 				"inject/nodeType.js",
 				"inject/event/clickAndHoldRight.js",
-				"inject/event/dblClickMiddle.js"
+				"inject/event/dblClickMiddle.js",
+				"inject/sendMessageList.js"
 			],
 			"matches": ["<all_urls>"]
 		}

@@ -6,7 +6,8 @@ var confirmPageMask = document.getElementById("confirm_page_mask");
 var confirmBtn = document.getElementById("confirm_btn");
 var cancelBtn = document.getElementById("cancel_btn");
 var confirmMessage = document.getElementById("confirm_message");
-var minInterval = 100, maxInterval = 1000;
+var minInterval = 100,
+	maxInterval = 1000;
 
 function save_options() {
 	chrome.storage.sync.set(
@@ -36,10 +37,10 @@ function init() {
 			opt.disabled = true;
 		}
 	});
-    intervalNum.addEventListener("onfocusout", function(e){
-        if(e.target.value > 1000) e.target.value = 1000;
-        if(e.target.value < 100) e.target.value = 100;
-    })
+	intervalNum.addEventListener("onfocusout", function (e) {
+		if (e.target.value > 1000) e.target.value = 1000;
+		if (e.target.value < 100) e.target.value = 100;
+	});
 
 	function set_default() {
 		intervalTxt.textContent = `${triggerType.value == "right_btn" ? "Hold" : "Click"} interval: `;
@@ -50,12 +51,15 @@ function init() {
 		e.stopPropagation();
 	});
 
-	chrome.storage.sync.get({ triggerType: isMac? "middle_btn" : "right_btn", interval: isMac ? 400 : 250 }, function (items) {
-		console.log(items);
-		intervalTxt.textContent = `${items.triggerType == "right_btn" ? "Hold" : "Click"} interval: `;
-		triggerType.value = items.triggerType;
-		intervalNum.value = items.interval;
-	});
+	chrome.storage.sync.get(
+		{ triggerType: isMac ? "middle_btn" : "right_btn", interval: isMac ? 400 : 250 },
+		function (items) {
+			console.log(items);
+			intervalTxt.textContent = `${items.triggerType == "right_btn" ? "Hold" : "Click"} interval: `;
+			triggerType.value = items.triggerType;
+			intervalNum.value = items.interval;
+		}
+	);
 }
 
 function reload_tabs() {
