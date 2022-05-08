@@ -12,6 +12,7 @@ async function getSendMessageList() {
 	return list.default;
 }
 
+// helper functions
 async function module(args) {
 	let { fnName } = args,
 		nodeTypeSrc = chrome.runtime.getURL("inject/nodeType.js"),
@@ -20,6 +21,7 @@ async function module(args) {
 	return module[fnName](args);
 }
 
+// mouse event handler
 async function triggerTypeModule(args) {
 	let { type } = args,
 		clickAndHoldSrc = chrome.runtime.getURL("inject/event/clickAndHoldRight.js"),
@@ -30,6 +32,7 @@ async function triggerTypeModule(args) {
 	trigger[type](args);
 }
 
+// tab menu class
 async function TabMenu(args) {
 	let createTabMenuSrc = chrome.runtime.getURL("inject/createTabMenu.js"),
 		createTabMenu = await import(createTabMenuSrc),
@@ -37,6 +40,7 @@ async function TabMenu(args) {
 	return new TabMenu(args);
 }
 
+// get storage data
 function getAllStorageSyncData() {
 	return new Promise((resolve, reject) => {
 		chrome.storage.sync.get(null, (items) => {
@@ -48,6 +52,7 @@ function getAllStorageSyncData() {
 	});
 }
 
+// get all tab list
 function getAllTabList() {
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage({ message: sendMessageList.GET_TAB_LIST }, (response) => {
@@ -78,59 +83,57 @@ let helperFn = {
 	getAllStorageSyncData,
 };
 
-getSendMessageList()
-	.then((list) => {
-		sendMessageList = list;
-		return getAllStorageSyncData();
-	})
-	.then((storageData) => {
-		triggerType = storageData.triggerType || triggerType;
-		time_interval = storageData.interval || time_interval;
-		return TabMenu({
-			width: 380,
-			height: 500,
-			showOtherWindows: storageData.showOtherWindows,
-			fontSize: storageData.tabMenuNode_fontSize,
+async function tabMenuInit() {
+	let storageData = await getAllStorageSyncData();
+	sendMessageList = await getSendMessageList();
+	triggerType = storageData.triggerType || triggerType;
+	time_interval = storageData.interval || time_interval;
+	// init tab menu
+	tabMenu = await TabMenu({
+		width: 380,
+		height: 500,
+		showOtherWindows: storageData.showOtherWindows,
+		fontSize: storageData.tabMenuNode_fontSize,
+	});
+	// init font size and show other windows option
+	tabMenu.onCheckboxChanged(async function () {
+		let tabList = await getAllTabList();
+		return tabList;
+	});
+	tabMenu.onSelectFontSizeChanged();
+	// mouse event handler
+	if (triggerType === "middle_btn") {
+		await triggerTypeModule({
+			type: "DblClickMiddle",
+			tabMenu,
+			time_interval,
+			...helperFn,
 		});
-	})
-	.then(async (TabMenu) => {
-		tabMenu = TabMenu;
-		tabMenu.onCheckboxChanged(async function () {
-			let tabList = await getAllTabList();
-			return tabList;
+	} else {
+		await triggerTypeModule({
+			type: "ClickAndHoldRight",
+			tabMenu,
+			time_interval,
+			...helperFn,
 		});
-		tabMenu.onSelectFontSizeChanged();
-		// way to trigger tab list
-		if (triggerType === "middle_btn") {
-			await triggerTypeModule({
-				type: "DblClickMiddle",
-				tabMenu,
-				time_interval,
-				...helperFn,
-			});
-		} else {
-			await triggerTypeModule({
-				type: "ClickAndHoldRight",
-				tabMenu,
-				time_interval,
-				...helperFn,
-			});
+	}
+	// close current tab menu when switching tab with tab bar
+	chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+		if (message.tabChanged) {
+			tabMenu.visible(false);
+			sendResponse();
+			return true;
 		}
 	});
 
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-	if (message.tabChanged) {
-		tabMenu.visible(false);
-		sendResponse();
-		return true;
-	}
-});
+	window.onkeyup = function (e) {
+		if (e.key === "Escape") {
+			tabMenu.visible(false);
+		}
+	};
+}
 
-window.onkeyup = function (e) {
-	if (e.key === "Escape") {
-		tabMenu.visible(false);
-	}
-};
+tabMenuInit();
 
 /**
  * TODO: limit website

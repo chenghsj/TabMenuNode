@@ -45,6 +45,7 @@ class TabMenu {
 	};
 
 	#createListNode = ({ list, windowId, currentWindow, nextWindowId }) => {
+		let self = this;
 		let ul = document.createElement("ul");
 		let closeWindowIcon = document.createElement("span");
 		let ulCorner = document.createElement("span");
@@ -72,6 +73,7 @@ class TabMenu {
 					windowId: list[0].windowId,
 					nextWindowId,
 					currentWindow,
+					showOtherWindows: self.showOtherWindows,
 				},
 				(response) => {}
 			);

@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 			chrome.tabs.remove(message.tabId);
 			break;
 		case sendMessageList.CLOSE_WINDOW:
-			if (message.currentWindow) {
+			if (message.currentWindow && message.showOtherWindows) {
 				chrome.windows.update(message.nextWindowId, { focused: true }, function () {});
 			}
 			chrome.windows.remove(message.windowId);
@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	}
 	return true;
 });
-//close tab menu when changing tab by tab bar
+//close tab menu when switching tab with tab bar
 chrome.tabs.onActivated.addListener(function ({ tabId, windowId }) {
 	if (chrome.runtime.lastError) {
 		console.error(chrome.runtime.lastError.message);
