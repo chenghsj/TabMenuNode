@@ -29,9 +29,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 			chrome.tabs.remove(message.tabId);
 			break;
 		case sendMessageList.CLOSE_WINDOW:
-			if (message.currentWindow && message.showOtherWindows) {
-				chrome.windows.update(message.nextWindowId, { focused: true }, function () {});
-			}
+			// if (message.currentWindow && message.showOtherWindows) {
+			// 	chrome.windows.update(message.nextWindowId, { focused: true }, function () {});
+			// }
 			chrome.windows.remove(message.windowId);
 			break;
 		default:
