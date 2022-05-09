@@ -3,7 +3,7 @@
 
 	"name": "Tab Menu Node",
 	"description": "the tab menu will appear after double click middle button",
-	"version": "1.1",
+	"version": "1.1.1",
 	"icons": {
 		"128": "icon2.png"
 	},
