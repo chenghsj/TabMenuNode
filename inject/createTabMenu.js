@@ -49,14 +49,29 @@ class TabMenu {
 		let ul = document.createElement("ul");
 		let closeWindowIcon = document.createElement("span");
 		let ulCorner = document.createElement("span");
+
+		let navBar = document.createElement('div');
+		let navBarCollapseBtn = document.createElement('span')
+
 		ulCorner.className = `tabMenuNode_tab_list_corner ${currentWindow ? "currentWindow" : ""}`;
-		closeWindowIcon.className = "tabMenuNode_tab_list_window_close";
+
 		ul.id = `tabMenuNode_tab_list|${list[0].windowId}`;
 		ul.className = `tabMenuNode_tab_list ${currentWindow ? "current_window" : ""}`;
+		navBar.className = `tabMenuNode_nav_bar`;
+		navBarCollapseBtn.className = 'tmn_collapse_btn'
+
+		closeWindowIcon.className = "tabMenuNode_tab_list_window_close";
 		closeWindowIcon.innerHTML += `${closeBtn(ul.id, { isWindow: true })}`;
+
 		this.#createListItem({ listNode: ul, list, windowId, currentWindow });
+		navBar.prepend(navBarCollapseBtn);
+		ul.prepend(navBar);
 		ul.append(ulCorner, closeWindowIcon);
 		this.tabMenu.appendChild(ul);
+
+		navBarCollapseBtn.onclick = function () {
+			this.classList.add("tmn_collapse");
+		}
 
 		ul.onmouseenter = function () {
 			ulCorner.classList.add("mouseenter");
@@ -75,7 +90,7 @@ class TabMenu {
 					currentWindow,
 					showOtherWindows: self.showOtherWindows,
 				},
-				(response) => {}
+				(response) => { }
 			);
 			ul.remove();
 		};
@@ -104,7 +119,7 @@ class TabMenu {
 				e.stopPropagation();
 				chrome.runtime.sendMessage(
 					{ message: sendMessageList.CLOSE_TAB, tabId: item.id },
-					(response) => {}
+					(response) => { }
 				);
 				if (this.closest("ul").childElementCount === 1) {
 					this.closest("ul").remove();
@@ -132,7 +147,7 @@ class TabMenu {
 						currentWindow,
 						windowId: parseInt(windowId),
 					},
-					(response) => {}
+					(response) => { }
 				);
 				self.visibility = false;
 				self.visible(false);
@@ -171,8 +186,8 @@ class TabMenu {
 			this.pageY > (this.clientHeight / 3) * 2 + window.scrollY
 				? windowMoveY - maxHeight - 5
 				: this.pageY + maxHeight > windowMoveY
-				? windowMoveY - maxHeight - 5
-				: this.pageY;
+					? windowMoveY - maxHeight - 5
+					: this.pageY;
 		let styles = {
 			top,
 			left: this.pageX + this.width < this.clientWidth + window.scrollX && this.pageX,
@@ -247,7 +262,7 @@ class TabMenu {
 	onSelectFontSizeChanged = () => {
 		let self = this;
 		this.fontSelection.addEventListener("change", function (e) {
-			chrome.storage.sync.set({ tabMenuNode_fontSize: e.target.value }, function () {});
+			chrome.storage.sync.set({ tabMenuNode_fontSize: e.target.value }, function () { });
 			self.fontSize = e.target.value;
 			self.tabMenu.style.fontSize = `${e.target.value}px`;
 		});
@@ -270,7 +285,7 @@ class TabMenu {
 		let self = this;
 		this.checkbox.addEventListener("change", async function () {
 			let tabList = await cb();
-			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () {});
+			chrome.storage.sync.set({ showOtherWindows: this.checked }, function () { });
 			self.showOtherWindows = this.checked;
 			if (this.checked) {
 				self.addList(tabList[0], tabList[1]);
@@ -339,7 +354,6 @@ export { TabMenu };
 var blankIconPath = `<svg class='tab_list_blank_icon' width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0,0H24V24H0Z" data-name="Path 3637"/><path fill="#7c7c7c" d="M2939.848,964.01h5.2a3.748,3.748,0,0,1,3.06.9l3.672,3.6a3.078,3.078,0,0,1,1.224,2.7v10.2a1.818,1.818,0,0,1-1.836,1.8h-11.322a1.818,1.818,0,0,1-1.836-1.8v-15.6A1.819,1.819,0,0,1,2939.848,964.01Zm6.964,2.173a1.338,1.338,0,0,0-.232-.189v3.245a1.083,1.083,0,0,0,1.093,1.071h3.311a5.233,5.233,0,0,0-.5-.527Zm-6.964,15.227h11.322v-9.3h-3.5a2.9,2.9,0,0,1-2.929-2.871V965.81h-4.9Z" data-name="Color Fill 16 copy 7" transform="translate(-2933.512 -961.61)"/></svg>`;
 
 function closeBtn(id, { isWindow }) {
-	return `<svg id=${id} class='tab_item_close_btn${
-		isWindow ? "_window" : ""
-	}' width="24" height="24" fill="" viewBox="0 0 24 24"><path fill="" d="M7.05022 7.05028C6.65969 7.4408 6.65969 8.07397 7.05022 8.46449L10.5858 12L7.05023 15.5356C6.6597 15.9261 6.6597 16.5593 7.05023 16.9498C7.44075 17.3403 8.07392 17.3403 8.46444 16.9498L12 13.4142L15.5355 16.9498C15.926 17.3403 16.5592 17.3403 16.9497 16.9498C17.3402 16.5592 17.3402 15.9261 16.9497 15.5356L13.4142 12L16.9497 8.46449C17.3402 8.07397 17.3402 7.4408 16.9497 7.05028C16.5592 6.65976 15.926 6.65976 15.5355 7.05028L12 10.5858L8.46443 7.05028C8.07391 6.65975 7.44074 6.65975 7.05022 7.05028Z"/></svg>`;
+	return `<svg id=${id} class='tab_item_close_btn${isWindow ? "_window" : ""
+		}' width="24" height="24" fill="" viewBox="0 0 24 24"><path fill="" d="M7.05022 7.05028C6.65969 7.4408 6.65969 8.07397 7.05022 8.46449L10.5858 12L7.05023 15.5356C6.6597 15.9261 6.6597 16.5593 7.05023 16.9498C7.44075 17.3403 8.07392 17.3403 8.46444 16.9498L12 13.4142L15.5355 16.9498C15.926 17.3403 16.5592 17.3403 16.9497 16.9498C17.3402 16.5592 17.3402 15.9261 16.9497 15.5356L13.4142 12L16.9497 8.46449C17.3402 8.07397 17.3402 7.4408 16.9497 7.05028C16.5592 6.65976 15.926 6.65976 15.5355 7.05028L12 10.5858L8.46443 7.05028C8.07391 6.65975 7.44074 6.65975 7.05022 7.05028Z"/></svg>`;
 }

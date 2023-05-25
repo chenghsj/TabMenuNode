@@ -36,7 +36,7 @@
 
 .tabMenuNode_tab_list{
     list-style: none;
-    padding: 1% 4% 1% 3%;
+    padding: 10% 4% 1% 3%;
     margin: 4% !important;
     margin-top: 5% !important;
     border: 1px solid #969696;
@@ -84,6 +84,42 @@
 .tabMenuNode_tab_list.current_window{
     border: 2px solid rgb(0 28 243 / 52%);
     /* box-shadow: 0px 0px 5px -1px rgb(0 28 243 / 35%); */
+}
+
+.tabMenuNode_nav_bar {
+    width: 100%;
+    height: 1.8rem;
+    background:#969696;
+    border: none;
+    border-radius: 0;
+    position:absolute;
+    left: 0;
+    top: 0;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 2%;
+}
+
+.tabMenuNode_tab_list.current_window .tabMenuNode_nav_bar{
+    background:rgb(122,137,249);
+}
+
+.tabMenuNode_tab_list .tabMenuNode_nav_bar{
+    background:#969696;
+}
+
+.tmn_collapse_btn {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0.5rem 0.5rem 0.5rem;
+    border-color: transparent transparent white transparent;
+}
+
+.tmn_collapse {
+    transform: scaleY(-1);
 }
 
 .tabMenuNode_tab_item{

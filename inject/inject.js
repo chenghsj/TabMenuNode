@@ -131,6 +131,10 @@ async function tabMenuInit() {
 			tabMenu.visible(false);
 		}
 	};
+
+	window.onscroll = function (e) {
+		tabMenu.visible(false);
+	}
 }
 
 tabMenuInit();
